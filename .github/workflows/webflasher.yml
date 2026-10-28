@@ -55,10 +55,12 @@ jobs:
       - name: Build independent Morse Tutor
         working-directory: morse-tutor
         run: |
-          python -m platformio run -e esp32-2432s028r -e esp32-2432s028r-st7789 -e esp32-4in-st7796
-          for panel in 9341 7789 7796; do
+          python -m platformio run -e esp32-2432s028r -e esp32-2432s028r-st7789 -e esp32-4in-st7796 -e freenove-32-st7789
+          for panel in 9341 7789 7796 778932; do
             g++ -std=c++11 -fsyntax-only -I include -DBRICO_PANEL=$panel test/control_logic.cpp
           done
+          g++ -std=c++11 -Wall -Wextra -Werror -I include test/protocol_morse.cpp -o /tmp/bricohams-morse-tests
+          /tmp/bricohams-morse-tests
           node tools/generate-adapter.mjs
           node tools/validate-models.mjs
           node tools/package-firmware.mjs

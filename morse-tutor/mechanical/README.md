@@ -21,7 +21,8 @@ Parámetros iniciales: PCB **86 × 50 mm**, ventana **70 × 43 mm**, conjunto
 pantalla/PCB de **9 mm** y power bank cerrado de hasta **100 × 60 × 22 mm**.
 Son envolventes de diseño, **no cotas certificadas del fabricante**.
 La ventana permite acceso táctil pero no garantiza el bisel de cada CYD.
-Los STL suministrados no sirven sin adaptar para una pantalla de 4".
+Los STL suministrados no sirven sin adaptar para una pantalla de 4"
+ni se ha comprobado el ajuste de la Freenove 3,2" FNK0114L.
 
 Medir PCB, vidrio, USB, microSD, conectores y altura de componentes antes de
 imprimir. Cambiar `pcb_w`, `pcb_h`, `screen_w`, `screen_h`, `screen_stack`,

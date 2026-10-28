@@ -4,3 +4,4 @@ __pycache__/
 .vscode/
 src/*.ino.cpp
 webflasher/firmware/
+webflasher/licenses/

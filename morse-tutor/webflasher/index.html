@@ -35,12 +35,14 @@
     </article>
     <article>
       <h2>Morse Tutor</h2>
-      <p>Aprendizaje Koch, recepción, práctica de envío, llave recta o palas, tarjeta SD y dos vías ESP-NOW.</p>
+      <p>Versión 2.0.0: nueva implementación Bricohams, Koch, recepción, envío, llave recta o palas,
+        tarjeta SD y sala de mensajes para múltiples tutores por ESP-NOW.</p>
       <label for="board">Modelo de pantalla</label>
       <select id="board">
         <option value="esp32-2432s028r">CYD 2,8" — ILI9341</option>
         <option value="esp32-2432s028r-st7789">CYD 2,8" — ST7789 (experimental)</option>
         <option value="esp32-4in-st7796">CYD 4" — ST7796</option>
+        <option value="freenove-32-st7789">Freenove 3,2" FNK0114L — ST7789</option>
       </select>
       <esp-web-install-button id="install" manifest="manifest-esp32-2432s028r.json">
         <button slot="activate">Instalar Morse Tutor</button>
@@ -49,10 +51,21 @@
       <p id="browser-warning" hidden>El instalador necesita HTTPS (o localhost) y un navegador con Web Serial.</p>
       <small>En el primer arranque, toca las tres cruces para calibrar el táctil.
         La llave física necesita GPIO libres y cableado adecuado; consulta el manual antes de conectar.</small>
+      <small>WiFi: <strong>Bricohams-CW-XXXXXX</strong> · clave <strong>BricohamsCW</strong> ·
+        abre <strong>http://192.168.4.1</strong> conectado a la pantalla.
+        Los tutores v2 reciben en canal 1 sin emparejamiento; no necesita Internet.
+        En Enviar → Red CW puedes escuchar, mostrar/ocultar el texto y transmitir con la llave.</small>
+      <small>Prototipo sin validación física. La caja y el adaptador existentes son para CYD de 2,8":
+        no se certifica su ajuste ni su conexión a Freenove. No garantiza entrega ni confidencialidad;
+        todos los equipos de la sala deben usar v2.</small>
     </article>
   </div>
-  <p>Adaptación Bricohams del Morse Tutor de Bruce E. Hall (W8BH), licencia MIT.
-    <a href="https://github.com/bhall66/morse-tutor">Proyecto original</a> ·
+  <p>Firmware actual de nueva implementación Bricohams, licencia MIT.
+    Las bibliotecas conservan sus licencias y el historial de la adaptación anterior conserva
+    los derechos de Bruce E. Hall (W8BH).
+    <a href="licenses/THIRD_PARTY_NOTICES.md">Licencias y procedencia</a> ·
+    <a href="licenses/TFT_eSPI.txt">TFT_eSPI</a> ·
+    <a href="licenses/Arduino-ESP32-LGPL-2.1.md">Arduino LGPL</a> ·
     <a href="https://github.com/anatolbricoham/Ham-Clock">Ham-Clock</a></p>
   <script type="module">
     const board = document.getElementById('board');

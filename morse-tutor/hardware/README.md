@@ -8,6 +8,13 @@ Los pines TFT/táctil y la variante ST7796 proceden de los perfiles de Ham-Clock
 No se ha confirmado el conector de expansión de la CYD de 4": no trasladar
 la numeración del conector de 2,8" a otra placa.
 
+El nuevo perfil de firmware Freenove 3,2" FNK0114L **no convierte este
+adaptador en un shield compatible**. En Freenove GPIO27 es backlight,
+el táctil comparte HSPI y el audio usa DAC25/DAC26 con habilitación GPIO4.
+Los contactos externos se mantienen deshabilitados hasta verificar el
+conector real; no aplicar el arnés DIT22/DAH27 de esta documentación.
+Consultar [el perfil y sus fuentes oficiales](../README.md#pantallas-y-wokwi).
+
 **No conectar nada con la placa encendida.** Antes de alimentar, comprobar con
 multímetro polaridad, continuidad y ausencia de cortocircuito entre 3,3 V/5 V/GND.
 Las entradas del ESP32 son de **3,3 V**, no toleran 5 V.

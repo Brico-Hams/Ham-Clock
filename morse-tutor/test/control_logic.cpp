@@ -3,6 +3,16 @@
 
 using brico::controlAt;
 using brico::scaleAxis;
+static_assert(controlAt(0, DISPLAY_H - BRICO_CONTROL_HEIGHT, DISPLAY_W, DISPLAY_H, BRICO_CONTROL_HEIGHT) == 0,
+              "Actual footer first pixel");
+static_assert(controlAt(DISPLAY_W - 1, DISPLAY_H - 1, DISPLAY_W, DISPLAY_H, BRICO_CONTROL_HEIGHT) == 4,
+              "Actual footer last pixel");
+static_assert(controlAt(0, DISPLAY_H - BRICO_CONTROL_HEIGHT - 1, DISPLAY_W, DISPLAY_H, BRICO_CONTROL_HEIGHT) == -1,
+              "Actual body does not activate footer");
+#if BRICO_PANEL == 778932
+static_assert(BRICO_DIT_PIN == -1 && BRICO_DAH_PIN == -1, "Freenove connector is not assumed");
+static_assert(TFT_BL == 27 && TOUCH_IRQ == -1 && BRICO_AUDIO_ENABLE == 4, "Verified Freenove profile");
+#endif
 static_assert(controlAt(0, 208, 320, 240, 32) == 0, "Left button");
 static_assert(controlAt(63, 239, 320, 240, 32) == 0, "Left boundary");
 static_assert(controlAt(64, 208, 320, 240, 32) == 1, "Right button");

@@ -6,13 +6,14 @@ import assert from 'node:assert/strict';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const site = join(root, '..', 'webflasher', 'morse-tutor');
-const environments = ['esp32-2432s028r', 'esp32-2432s028r-st7789', 'esp32-4in-st7796'];
+const environments = ['esp32-2432s028r', 'esp32-2432s028r-st7789', 'esp32-4in-st7796', 'freenove-32-st7789'];
 const checksums = new Map(readFileSync(join(site, 'firmware', 'SHA256SUMS'), 'utf8').trim()
   .split('\n').map(line => { const [hash, name] = line.split('  '); return [name, hash]; }));
 let checked = 0;
 for (const environment of environments) {
   const manifest = JSON.parse(readFileSync(join(site, `manifest-${environment}.json`), 'utf8'));
   assert(manifest.name.includes('Bricohams Morse Tutor'));
+  assert.equal(manifest.version, '2.0.0');
   assert.equal(manifest.builds.length, 1);
   assert.equal(manifest.builds[0].chipFamily, 'ESP32');
   const parts = manifest.builds[0].parts;
@@ -38,7 +39,9 @@ for (const environment of environments) {
     checked++;
   }
 }
-assert.equal(checksums.size, 12);
+assert.equal(checksums.size, environments.length * 4);
+for (const name of ['Bricohams-MIT.txt', 'THIRD_PARTY_NOTICES.md', 'TFT_eSPI.txt', 'Arduino-ESP32-LGPL-2.1.md'])
+  assert(readFileSync(join(site, 'licenses', name), 'utf8').length > 100, 'Distributed copyright notices');
 const clockPage = readFileSync(join(root, '..', 'webflasher', 'index.html'), 'utf8');
 const tutorPage = readFileSync(join(site, 'index.html'), 'utf8');
 assert(clockPage.includes('href="morse-tutor/index.html"'));
@@ -46,4 +49,4 @@ assert(tutorPage.includes('href="../index.html"'));
 for (const environment of environments) assert(tutorPage.includes(`value="${environment}"`));
 assert(existsSync(join(root, 'hardware', 'adapter', 'gerber', 'Bricohams-PTH.drl')));
 assert.equal(JSON.parse(readFileSync(join(root, 'mechanical', 'mesh-validation.json'), 'utf8')).length, 8);
-console.log(`PASS: ${checked} firmware files, SHA-256, flash offsets, partition fit, 3 manifests, reciprocal installer links and 8 mesh reports.`);
+console.log(`PASS: ${checked} firmware files, SHA-256, flash offsets, partition fit, ${environments.length} manifests, reciprocal installer links and 8 mesh reports.`);

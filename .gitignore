@@ -5,3 +5,6 @@
 .vscode/ipch
 include/app_config.local.h
 webflasher/firmware/
+.venv/
+__pycache__/
+webflasher/morse-tutor/

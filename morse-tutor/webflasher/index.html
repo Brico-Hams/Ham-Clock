@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bricohams | Reloj o Morse Tutor</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #101725; color: #eef4ff; }
+    body { max-width: 860px; margin: auto; padding: 32px 20px; }
+    h1, h2 { color: #ffd84d; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 20px; }
+    article { background: #1b2940; padding: 24px; border: 1px solid #405575; border-radius: 12px; }
+    a { color: #8ee6ff; }
+    button, select, .button { font: inherit; padding: 12px; border-radius: 6px; }
+    button, .button { display: inline-block; background: #ffd84d; color: #101725; border: 0; cursor: pointer; text-decoration: none; font-weight: bold; }
+    select { width: 100%; margin: 10px 0 18px; background: #101725; color: white; }
+    .notice { border-left: 4px solid #ffd84d; padding: 12px; }
+    small { display: block; margin-top: 16px; }
+    #browser-warning { color: #ffbaaa; }
+  </style>
+  <script type="module" src="https://unpkg.com/esp-web-tools@10.1.1/dist/web/install-button.js?module"></script>
+</head>
+<body>
+  <h1>Bricohams</h1>
+  <p>Tu pantalla, tu elección: dos firmwares completamente independientes.</p>
+  <p class="notice"><strong>Grabar uno sustituye al otro.</strong> No es una actualización conjunta.
+    Guarda antes la configuración y selecciona el modelo exacto de tu placa.
+    No actives el borrado completo de flash salvo que quieras eliminar los ajustes guardados.</p>
+  <div class="cards">
+    <article>
+      <h2>Ham-Clock</h2>
+      <p>Reloj y dashboard de radio: propagación, DX, mapas y servicios conectados.</p>
+      <a class="button" href="../index.html">Instalar el reloj</a>
+      <small>Abre el instalador existente de Ham-Clock. El tutor no modifica su firmware.</small>
+    </article>
+    <article>
+      <h2>Morse Tutor</h2>
+      <p>Aprendizaje Koch, recepción, práctica de envío, llave recta o palas, tarjeta SD y dos vías ESP-NOW.</p>
+      <label for="board">Modelo de pantalla</label>
+      <select id="board">
+        <option value="esp32-2432s028r">CYD 2,8" — ILI9341</option>
+        <option value="esp32-2432s028r-st7789">CYD 2,8" — ST7789 (experimental)</option>
+        <option value="esp32-4in-st7796">CYD 4" — ST7796</option>
+      </select>
+      <esp-web-install-button id="install" manifest="manifest-esp32-2432s028r.json">
+        <button slot="activate">Instalar Morse Tutor</button>
+        <span slot="unsupported">Usa Chrome o Edge de escritorio con Web Serial.</span>
+      </esp-web-install-button>
+      <p id="browser-warning" hidden>El instalador necesita HTTPS (o localhost) y un navegador con Web Serial.</p>
+      <small>En el primer arranque, toca las tres cruces para calibrar el táctil.
+        La llave física necesita GPIO libres y cableado adecuado; consulta el manual antes de conectar.</small>
+    </article>
+  </div>
+  <p>Adaptación Bricohams del Morse Tutor de Bruce E. Hall (W8BH), licencia MIT.
+    <a href="https://github.com/bhall66/morse-tutor">Proyecto original</a> ·
+    <a href="https://github.com/anatolbricoham/Ham-Clock">Ham-Clock</a></p>
+  <script type="module">
+    const board = document.getElementById('board');
+    const install = document.getElementById('install');
+    board.addEventListener('change', () => {
+      install.setAttribute('manifest', `manifest-${board.value}.json`);
+    });
+    document.getElementById('browser-warning').hidden = window.isSecureContext && 'serial' in navigator;
+  </script>
+</body>
+</html>

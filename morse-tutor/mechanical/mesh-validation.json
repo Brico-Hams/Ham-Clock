@@ -1,0 +1,170 @@
+[
+  {
+    "name": "bricohams-clamp.stl",
+    "triangles": 176,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        12
+      ],
+      [
+        0,
+        6
+      ],
+      [
+        0,
+        3
+      ]
+    ],
+    "volumeMm3": 192
+  },
+  {
+    "name": "bricohams-clock-base.stl",
+    "triangles": 1788,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        116
+      ],
+      [
+        0,
+        90
+      ],
+      [
+        0,
+        48
+      ]
+    ],
+    "volumeMm3": 81780
+  },
+  {
+    "name": "bricohams-clock-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        116
+      ],
+      [
+        0,
+        90
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 18497
+  },
+  {
+    "name": "bricohams-fit_coupon.stl",
+    "triangles": 848,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        40
+      ],
+      [
+        0,
+        25
+      ],
+      [
+        0,
+        3
+      ]
+    ],
+    "volumeMm3": 2506
+  },
+  {
+    "name": "bricohams-paddle_left.stl",
+    "triangles": 828,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        -7,
+        7
+      ],
+      [
+        -40,
+        7
+      ],
+      [
+        0,
+        16
+      ]
+    ],
+    "volumeMm3": 6259
+  },
+  {
+    "name": "bricohams-paddle_right.stl",
+    "triangles": 828,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        -7,
+        7
+      ],
+      [
+        -40,
+        7
+      ],
+      [
+        0,
+        16
+      ]
+    ],
+    "volumeMm3": 6259
+  },
+  {
+    "name": "bricohams-tutor-base.stl",
+    "triangles": 4652,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        0,
+        132
+      ],
+      [
+        0,
+        60
+      ]
+    ],
+    "volumeMm3": 155432
+  },
+  {
+    "name": "bricohams-tutor-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        56,
+        132
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 25377
+  }
+]

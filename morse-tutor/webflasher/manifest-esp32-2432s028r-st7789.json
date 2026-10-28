@@ -1,0 +1,28 @@
+{
+  "name": "Bricohams Morse Tutor (esp32-2432s028r-st7789)",
+  "version": "1.0.0",
+  "new_install_prompt_erase": false,
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        {
+          "path": "firmware/esp32-2432s028r-st7789/bootloader.bin",
+          "offset": 4096
+        },
+        {
+          "path": "firmware/esp32-2432s028r-st7789/partitions.bin",
+          "offset": 32768
+        },
+        {
+          "path": "firmware/esp32-2432s028r-st7789/boot_app0.bin",
+          "offset": 57344
+        },
+        {
+          "path": "firmware/esp32-2432s028r-st7789/firmware.bin",
+          "offset": 65536
+        }
+      ]
+    }
+  ]
+}

@@ -6,6 +6,20 @@ A HamClock-inspired ham radio dashboard for the ESP32 Cheap Yellow Display, supp
 
 **[Flash it in your browser with the Web Flasher](https://anatolbricoham.github.io/Ham-Clock/webflasher/index.html)**
 
+## Reloj o Morse Tutor Bricohams
+
+El suscriptor puede elegir entre **dos firmwares independientes**: este reloj,
+o [Bricohams Morse Tutor](morse-tutor/README.md). Grabar uno sustituye al otro;
+no se ha incorporado el tutor al bucle ni a las dependencias del reloj.
+El [instalador del tutor](https://anatolbricoham.github.io/Ham-Clock/webflasher/morse-tutor/index.html)
+se publica junto al existente mediante el workflow de GitHub Pages.
+
+El subproyecto incluye una interfaz cableada de llave/audio con Gerber y cajas
+paramétricas imprimibles para reloj con batería y tutor con palas mecánicas.
+Son **prototipos pendientes de validación física**, no hardware certificado.
+Consulta [alimentación, conexiones y fabricación](morse-tutor/hardware/README.md)
+y [las medidas de las cajas](morse-tutor/mechanical/README.md) antes de fabricar.
+
 It provides a touch-controlled landscape dashboard — 320x240 on the 2.8" board, 480x320 on the 4.0" — with UTC/local time, HamQSL propagation data, a greyline map, DX spots, Wi-Fi setup, and a local web settings page. The 4.0" board uses the extra room rather than simply scaling up: larger text on the data pages, and twelve DX/POTA spots in place of eight.
 
 <a href="https://www.buymeacoffee.com/bricohams" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" style="height: 60px !important;width: 217px !important;" ></a>

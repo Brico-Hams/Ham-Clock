@@ -1,0 +1,6 @@
+.pio/
+.venv/
+__pycache__/
+.vscode/
+src/*.ino.cpp
+webflasher/firmware/

@@ -29,10 +29,14 @@ jobs:
         with:
           python-version: "3.11"
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
       - uses: actions/cache@v4
         with:
           path: ~/.platformio
-          key: pio-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
+          key: pio-${{ runner.os }}-${{ hashFiles('platformio.ini', 'morse-tutor/platformio.ini') }}
 
       - name: Install PlatformIO
         run: pip install platformio
@@ -40,6 +44,22 @@ jobs:
       # app_config.h is committed; the local override is optional and ignored.
       - name: Build firmware and manifests
         run: python tools/build_webflasher.py --build
+
+      - name: Build independent Morse Tutor
+        working-directory: morse-tutor
+        run: |
+          python -m platformio run -e esp32-2432s028r -e esp32-2432s028r-st7789 -e esp32-4in-st7796
+          for panel in 9341 7789 7796; do
+            g++ -std=c++11 -fsyntax-only -I include -DBRICO_PANEL=$panel test/control_logic.cpp
+          done
+          node tools/generate-adapter.mjs
+          node tools/validate-models.mjs
+          node tools/package-firmware.mjs
+
+      - name: Stage Morse Tutor installer
+        run: |
+          node morse-tutor/tools/stage-installer.mjs
+          node morse-tutor/tools/validate-release.mjs
 
       - uses: actions/upload-pages-artifact@v3
         with:

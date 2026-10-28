@@ -1,0 +1,24 @@
+{
+  "status": "PROTOTYPE_NOT_PHYSICALLY_VALIDATED",
+  "nets": 10,
+  "pads": 35,
+  "segments": 201,
+  "vias": 1,
+  "minimumCopperClearanceMm": 0.3,
+  "checks": [
+    "all labelled nets connected",
+    "copper clearance >= 0.25 mm",
+    "mount keep-outs during routing",
+    "0.6 mm tracks",
+    "0.8 mm component drills",
+    "0.4 mm via drills"
+  ],
+  "notChecked": [
+    "KiCad ERC/DRC",
+    "fabricator CAM",
+    "real board header pinout",
+    "ESD immunity",
+    "audio measurements",
+    "physical assembly"
+  ]
+}

@@ -13,7 +13,7 @@ let checked = 0;
 for (const environment of environments) {
   const manifest = JSON.parse(readFileSync(join(site, `manifest-${environment}.json`), 'utf8'));
   assert(manifest.name.includes('Bricohams Morse Tutor'));
-  assert.equal(manifest.version, '2.0.0');
+  assert.equal(manifest.version, '2.1.0');
   assert.equal(manifest.builds.length, 1);
   assert.equal(manifest.builds[0].chipFamily, 'ESP32');
   const parts = manifest.builds[0].parts;

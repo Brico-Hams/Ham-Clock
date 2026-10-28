@@ -6,6 +6,7 @@
 #include <esp_timer.h>
 #endif
 #include "ControlLogic.h"
+#include "trainer_settings.h"
 
 namespace board {
 TFT_eSPI display;
@@ -68,7 +69,9 @@ void calibrate() {
       display.setTextColor(TFT_ORANGE);
       display.setTextSize(1);
       display.setCursor(55, DISPLAY_H / 2);
-      display.print("Bricohams: toca las 3 cruces");
+      char prompt[100];
+      brico::displayText(trainer::tr(brico::Text::Calibrate), prompt, sizeof(prompt));
+      display.print(prompt);
       display.drawLine(targets[i][0] - 12, targets[i][1], targets[i][0] + 12, targets[i][1], TFT_WHITE);
       display.drawLine(targets[i][0], targets[i][1] - 12, targets[i][0], targets[i][1] + 12, TFT_WHITE);
       uint16_t releaseX, releaseY;
@@ -93,6 +96,8 @@ void begin() {
   pinMode(TOUCH_CS, OUTPUT); digitalWrite(TOUCH_CS, HIGH);
   pinMode(BRICO_SD_CS, OUTPUT); digitalWrite(BRICO_SD_CS, HIGH);
   display.init(); display.setRotation(1); display.setTextWrap(false);
+  display.setAttribute(UTF8_SWITCH, false);
+  display.setAttribute(CP437_SWITCH, true);
   ledcSetup(BRICO_BACKLIGHT_CHANNEL, 5000, 8);
   ledcAttachPin(TFT_BL, BRICO_BACKLIGHT_CHANNEL);
   setBrightness(80);

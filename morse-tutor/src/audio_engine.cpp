@@ -16,6 +16,7 @@ struct Command {
   uint32_t generation = 0;
   char text[121] = {};
   int speed = 18, overall = 12, pitch = 700, keyMode = 0;
+  unsigned wordGap = 1;
   bool enabled = false;
 };
 QueueHandle_t commands = nullptr, events = nullptr;
@@ -48,7 +49,7 @@ void worker(void*) {
       } else if (command.generation == generation.load()) {
         currentGeneration = command.generation;
         player.stop(); keyer.reset(); decoder.reset(now);
-        if (!player.start(command.text, command.speed, command.overall, now)) {
+        if (!player.start(command.text, command.speed, command.overall, now, command.wordGap)) {
           Serial.println("Audio: rejected invalid playback command");
           playing.store(false);
         }
@@ -106,11 +107,12 @@ bool configure(int speed, int overall, int pitch, int keyMode, bool inputEnabled
   if (xQueueSend(commands, &command, 0) != pdTRUE) { Serial.println("Audio: configuration queue full"); return false; }
   return true;
 }
-bool play(const char* text, int speed, int overall) {
+bool play(const char* text, int speed, int overall, unsigned wordGap) {
   brico::TonePlayer validator;
-  if (!ready || !validator.start(text, speed, overall, 0)) return false;
+  if (!ready || !validator.start(text, speed, overall, 0, wordGap)) return false;
   Command command;
   command.kind = Kind::Play; command.speed = speed; command.overall = overall;
+  command.wordGap = wordGap;
   memcpy(command.text, text, strlen(text) + 1);
   command.generation = generation.fetch_add(1) + 1;
   playing.store(true);

@@ -10,6 +10,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 #include "network_page.h"
+#include "trainer_settings.h"
 
 namespace {
 constexpr uint8_t kBroadcast[] = {255, 255, 255, 255, 255, 255};
@@ -64,21 +65,64 @@ void sentCallback(const uint8_t*, esp_now_send_status_t status) {
 
 bool authorize() {
   if (server.header("X-Bricohams-Token") == token) return true;
-  server.send(403, "text/plain", "Sesion no autorizada; recarga la pagina.");
+  server.send(403, "text/plain; charset=utf-8", trainer::tr(brico::Text::Unauthorized));
   return false;
 }
 
+String catalog() {
+  String result = "{";
+  for (size_t i = 0; i < size_t(brico::Text::Count); ++i) {
+    if (i) result += ',';
+    result += jsonString(brico::kTranslations[i].key) + ":[";
+    for (size_t language = 0; language < brico::kLanguageCount; ++language) {
+      if (language) result += ',';
+      result += jsonString(brico::kTranslations[i].values[language]);
+    }
+    result += ']';
+  }
+  return result + "}";
+}
+bool number(const String& input, unsigned maximum, uint8_t& value) {
+  if (!input.length() || input.length() > 2) return false;
+  unsigned parsed = 0;
+  for (size_t i = 0; i < input.length(); ++i) {
+    if (input[i] < '0' || input[i] > '9') return false;
+    parsed = parsed * 10 + unsigned(input[i] - '0');
+  }
+  if (parsed > maximum) return false;
+  value = uint8_t(parsed); return true;
+}
+void reply(int code, brico::Text message) {
+  server.send(code, "text/plain; charset=utf-8", trainer::tr(message));
+}
+
 void serveState() {
+  const auto& options = trainer::settings();
   String result = "{\"ssid\":" + jsonString(ssid) + ",\"decode\":" +
       (autoDecode ? "true" : "false") + ",\"pending\":" + String(uxQueueMessagesWaiting(playback)) +
       ",\"drops\":" + String(callbackDrops.load() + playbackDrops) + ",\"invalid\":" + String(invalidPackets) +
-      ",\"sendFailures\":" + String(sendFailures.load()) + ",\"messages\":[";
+      ",\"sendFailures\":" + String(sendFailures.load()) +
+      ",\"language\":" + options.language + ",\"vocabulary\":" + options.vocabulary +
+      ",\"sequence\":" + options.sequence + ",\"wordGap\":" + options.wordGap +
+      ",\"custom\":" + jsonString(options.custom) + ",\"memories\":[";
+  for (int i = 0; i < 8; ++i) {
+    if (i) result += ',';
+    result += jsonString(options.memories[i]);
+  }
+  const auto& stats = trainer::stats();
+  result += "],\"groups\":" + String(stats.groups) + ",\"correct\":" + String(stats.correct) + ",\"scores\":[";
+  for (size_t i = 0; i < sizeof(stats.scores) / sizeof(*stats.scores); ++i) {
+    if (i) result += ',';
+    char symbol[] = {brico::kAlphabet[i].letter, '\0'};
+    result += "[" + jsonString(symbol) + "," + stats.scores[i].attempts + "," + stats.scores[i].errors + "]";
+  }
+  result += "],\"messages\":[";
   for (size_t i = 0; i < historyCount; ++i) {
     const auto& entry = history[(historyNext + kHistorySize - historyCount + i) % kHistorySize];
     char morse[brico::kMaxText * 9 + 1];
     if (!brico::toMorse(entry.message.text, morse, sizeof(morse))) {
       Serial.println("Network: failed to encode stored Morse");
-      server.send(500, "text/plain", "Error de codificacion");
+      server.send(500, "text/plain; charset=utf-8", trainer::tr(brico::Text::PlayError));
       return;
     }
     if (i) result += ',';
@@ -144,6 +188,8 @@ bool networkBegin() {
   server.on("/", HTTP_GET, [] {
     String page = FPSTR(kNetworkPage);
     page.replace("@TOKEN@", token);
+    page.replace("@CATALOG@", catalog());
+    page.replace("@LANGUAGE@", String(trainer::settings().language));
     server.sendHeader("Cache-Control", "no-store");
     server.send(200, "text/html; charset=utf-8", page);
   });
@@ -151,24 +197,61 @@ bool networkBegin() {
   server.on("/api/decode", HTTP_POST, [] {
     if (!authorize()) return;
     String body = server.arg("plain");
-    if (body != "0" && body != "1") { server.send(400, "text/plain", "Modo invalido"); return; }
-    if (!networkSetDecode(body == "1")) { server.send(500, "text/plain", "No se pudo guardar"); return; }
-    server.send(200, "text/plain", "OK");
+    if (body != "0" && body != "1") { reply(400, brico::Text::InvalidInput); return; }
+    if (!networkSetDecode(body == "1")) { reply(500, brico::Text::SaveError); return; }
+    reply(200, brico::Text::DecodeSaved);
+  });
+  server.on("/api/language", HTTP_POST, [] {
+    if (!authorize()) return;
+    auto options = trainer::settings();
+    if (!number(server.arg("plain"), 4, options.language)) { reply(400, brico::Text::InvalidInput); return; }
+    if (!trainer::save(options)) { reply(500, brico::Text::SaveError); return; }
+    reply(200, brico::Text::Saved);
+  });
+  server.on("/api/trainer", HTTP_POST, [] {
+    if (!authorize()) return;
+    auto options = trainer::settings();
+    String custom = server.arg("custom");
+    if (strlen(custom.c_str()) != custom.length() || !number(server.arg("vocabulary"), 4, options.vocabulary) ||
+        !number(server.arg("sequence"), 3, options.sequence) ||
+        !number(server.arg("wordGap"), 5, options.wordGap) || !options.wordGap ||
+        !brico::validSet(custom.c_str())) { reply(400, brico::Text::InvalidInput); return; }
+    strcpy(options.custom, custom.c_str());
+    if (!trainer::save(options)) { reply(500, brico::Text::SaveError); return; }
+    reply(200, brico::Text::Saved);
+  });
+  server.on("/api/memory", HTTP_POST, [] {
+    if (!authorize()) return;
+    String body = server.arg("plain");
+    int separator = body.indexOf('\n'); uint8_t index;
+    if (strlen(body.c_str()) != body.length() || separator != 1 || !number(body.substring(0, separator), 7, index) ||
+        body.length() > 2 + brico::kMaxText * 3) { reply(400, brico::Text::InvalidInput); return; }
+    auto options = trainer::settings();
+    String value = body.substring(separator + 1);
+    if (!value.length()) options.memories[index][0] = '\0';
+    else if (!brico::normalizeLatin(value.c_str(), options.memories[index], sizeof(options.memories[index]))) {
+      reply(400, brico::Text::InvalidInput); return;
+    }
+    if (!trainer::save(options)) { reply(500, brico::Text::SaveError); return; }
+    reply(200, brico::Text::Saved);
   });
   server.on("/api/send", HTTP_POST, [] {
     if (!authorize()) return;
     String body = server.arg("plain");
     int separator = body.indexOf('\n');
-    if (separator <= 0 || separator >= int(brico::kCallSize) || body.length() > brico::kMaxText + brico::kCallSize + 1) {
-      server.send(400, "text/plain", "Indicativo y mensaje invalidos"); return;
+    if (strlen(body.c_str()) != body.length() || separator <= 0 || separator >= int(brico::kCallSize) ||
+        body.length() > brico::kMaxText * 3 + brico::kCallSize + 1) {
+      reply(400, brico::Text::InvalidInput); return;
     }
     String call = body.substring(0, separator);
     call.toUpperCase();
-    if (!brico::validCall(call.c_str())) { server.send(400, "text/plain", "Indicativo invalido"); return; }
-    if (!networkPublish(body.substring(separator + 1).c_str(), call.c_str())) {
-      server.send(409, "text/plain", "No enviado: texto no Morse, demasiado largo, red no lista o cola llena."); return;
+    if (!brico::validCall(call.c_str())) { reply(400, brico::Text::InvalidCall); return; }
+    char normalized[brico::kMaxText + 1];
+    if (!brico::normalizeLatin(body.substring(separator + 1).c_str(), normalized, sizeof(normalized))) {
+      reply(400, brico::Text::InvalidInput); return;
     }
-    server.send(202, "text/plain", "En cola para difusion; sin confirmacion individual de recepcion.");
+    if (!networkPublish(normalized, call.c_str())) { reply(409, brico::Text::TxError); return; }
+    reply(202, brico::Text::Queued);
   });
   server.onNotFound([] { server.send(404, "text/plain", "No encontrado"); });
   server.begin();

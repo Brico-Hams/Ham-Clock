@@ -1,6 +1,6 @@
 {
   "name": "Bricohams Morse Tutor (esp32-2432s028r-st7789)",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "new_install_prompt_erase": false,
   "builds": [
     {

@@ -61,6 +61,10 @@ jobs:
           done
           g++ -std=c++11 -Wall -Wextra -Werror -I include test/protocol_morse.cpp -o /tmp/bricohams-morse-tests
           /tmp/bricohams-morse-tests
+          g++ -std=c++11 -Wall -Wextra -Werror -I include test/training.cpp -o /tmp/bricohams-training-tests
+          /tmp/bricohams-training-tests
+          g++ -std=c++11 -Wall -Wextra -Werror -I include -I src -I test/support test/trainer_settings.cpp src/trainer_settings.cpp -o /tmp/bricohams-settings-tests
+          /tmp/bricohams-settings-tests
           node tools/generate-adapter.mjs
           node tools/validate-models.mjs
           node tools/package-firmware.mjs

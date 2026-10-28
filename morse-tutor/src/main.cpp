@@ -6,48 +6,59 @@
 #include "tutor_network.h"
 #include "audio_engine.h"
 #include "ControlLogic.h"
+#include "trainer_settings.h"
 
 namespace {
 using board::display;
+using brico::Text;
+using trainer::tr;
 constexpr uint16_t kBackground = 0x10c3, kCard = 0x2125, kAccent = 0xfb23, kMuted = 0xad55;
 constexpr int kFooter = DISPLAY_H - BRICO_CONTROL_HEIGHT;
-enum class Screen { Home, Menu, Exercise, Setting, Callsign, Reset, Files };
+enum class Screen { Home, Menu, Exercise, Setting, Callsign, Reset, Files, Memories, Statistics };
 enum class Activity { Koch, Letters, Words, Numbers, Mixed, Card, Qso, Calls,
-  Practice, CopyOne, CopyTwo, CopyWord, CopyCall, Flash, HeadCopy, Network };
-struct MenuEntry { const char* label; Activity action; };
-constexpr MenuEntry kReceive[] = {{"Koch", Activity::Koch}, {"Letras", Activity::Letters},
-  {"Palabras", Activity::Words}, {"Numeros", Activity::Numbers}, {"Mixto", Activity::Mixed},
-  {"Tarjeta SD", Activity::Card}, {"QSO", Activity::Qso}, {"Indicativos", Activity::Calls}};
-constexpr MenuEntry kSend[] = {{"Practica", Activity::Practice}, {"Copiar 1", Activity::CopyOne},
-  {"Copiar 2", Activity::CopyTwo}, {"Copiar palabra", Activity::CopyWord}, {"Copiar indic.", Activity::CopyCall},
-  {"Tarjetas", Activity::Flash}, {"Copia mental", Activity::HeadCopy}, {"Red CW", Activity::Network}};
-constexpr const char* kSettings[] = {"Velocidad", "Farnsworth", "Tono", "Manipulador", "Indicativo",
-  "Brillo", "Koch nivel", "Grupo largo", "Restaurar"};
-constexpr const char* kTrainingWords[] = {"RADIO", "ANTENA", "SENAL", "AMIGO", "CASA", "HOLA",
-  "MAR", "SOL", "LUNA", "MONTE", "CABLE", "ONDA", "NORTE", "SUR", "ESTE", "OESTE", "CAMPO", "PUERTO"};
-constexpr char kLessonOrder[] = "KMURESNAPTLWI.JZFOY,VG5/Q9H38B?427C1D6X0";
+  Practice, CopyOne, CopyTwo, CopyWord, CopyCall, Flash, HeadCopy, Network, Echo, Adaptive, Memories, Statistics };
+struct MenuEntry { Text label; Activity action; };
+constexpr MenuEntry kReceive[] = {{Text::Koch, Activity::Koch}, {Text::Letters, Activity::Letters},
+  {Text::Words, Activity::Words}, {Text::Numbers, Activity::Numbers}, {Text::Mixed, Activity::Mixed},
+  {Text::Card, Activity::Card}, {Text::Qso, Activity::Qso}, {Text::Calls, Activity::Calls}};
+constexpr MenuEntry kSend[] = {{Text::Practice, Activity::Practice}, {Text::CopyOne, Activity::CopyOne},
+  {Text::CopyTwo, Activity::CopyTwo}, {Text::CopyWord, Activity::CopyWord}, {Text::CopyCall, Activity::CopyCall},
+  {Text::Flash, Activity::Flash}, {Text::HeadCopy, Activity::HeadCopy}, {Text::Network, Activity::Network},
+  {Text::Echo, Activity::Echo}, {Text::Adaptive, Activity::Adaptive}, {Text::Memories, Activity::Memories},
+  {Text::Statistics, Activity::Statistics}};
+constexpr Text kSettings[] = {Text::Speed, Text::Farnsworth, Text::Pitch, Text::KeyMode, Text::Callsign,
+  Text::Brightness, Text::KochLevel, Text::GroupSize, Text::Reset, Text::UiLanguage,
+  Text::WordLanguage, Text::Sequence, Text::CustomSet, Text::WordGap};
 struct Config {
   int speed = 18, overall = 12, pitch = 700, brightness = 80, keyMode = 0, lesson = 2, groupSize = 5;
   char callsign[brico::kCallSize] = "NOCALL";
 };
 Config config;
 Preferences storage;
-bool storageReady = false, cardReady = false, paused = false, waitingAnswer = false, reveal = false;
+bool storageReady = false, cardReady = false, paused = false, waitingAnswer = false;
 bool playbackVisible = true, playingNetwork = false, redraw = true;
 Screen screen = Screen::Home;
 Activity activity = Activity::Letters;
 int menuGroup = 0, menuPage = 0, focus = 0, setting = 0, hits = 0, attempts = 0, fileCount = 0, filePage = 0;
 char target[brico::kMaxText + 1] = {}, answer[brico::kMaxText + 1] = {}, outgoingWord[brico::kMaxText + 1] = {};
-char editingCall[brico::kCallSize] = {};
+char editingCall[brico::kMaxText + 1] = {};
+int editor = 0, keyboardPage = 0, memoryIndex = 0, memoryPage = 0;
+constexpr const char* kKeyboard = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/ .?,=+-@:;()!'\"&$";
+trainer::Settings draft;
+uint32_t answerDeadline = 0, settingsRevision = 0;
 String transcript, notice;
 String files[20];
 File lessonFile;
 uint32_t nextExercise = 0, lastStatusAt = 0;
 
 bool receiveActivity() { return int(activity) <= int(Activity::Calls); }
-bool challengeActivity() { return activity >= Activity::CopyOne && activity <= Activity::HeadCopy; }
+bool challengeActivity() { return (activity >= Activity::CopyOne && activity <= Activity::HeadCopy) ||
+    activity == Activity::Echo || activity == Activity::Adaptive; }
+int menuCount() { return menuGroup == 0 ? sizeof(kReceive) / sizeof(*kReceive) :
+    menuGroup == 1 ? sizeof(kSend) / sizeof(*kSend) : sizeof(kSettings) / sizeof(*kSettings); }
+void scoreAnswer();
 bool save() {
-  if (!storageReady) { notice = "Error: no se pueden guardar ajustes"; Serial.println(notice); redraw = true; return false; }
+  if (!storageReady) { notice = tr(Text::SaveError); Serial.println(notice); redraw = true; return false; }
   bool ok = storage.putInt("speed", config.speed) == sizeof(int);
   ok &= storage.putInt("overall", config.overall) == sizeof(int);
   ok &= storage.putInt("pitch", config.pitch) == sizeof(int);
@@ -56,7 +67,7 @@ bool save() {
   ok &= storage.putInt("lesson", config.lesson) == sizeof(int);
   ok &= storage.putInt("group", config.groupSize) == sizeof(int);
   ok &= storage.putString("call", config.callsign) == strlen(config.callsign);
-  if (!ok) { notice = "Error guardando ajustes"; Serial.println(notice); }
+  if (!ok) { notice = tr(Text::SaveError); Serial.println(notice); }
   redraw = true;
   return ok;
 }
@@ -68,25 +79,29 @@ void load() {
   config.pitch = constrain(storage.getInt("pitch", 700), 300, 1800);
   config.brightness = constrain(storage.getInt("brightness", 80), 10, 100);
   config.keyMode = constrain(storage.getInt("key", 0), 0, 2);
-  config.lesson = constrain(storage.getInt("lesson", 2), 2, int(strlen(kLessonOrder)));
+  config.lesson = constrain(storage.getInt("lesson", 2), 2, int(strlen(trainer::sequence())));
   config.groupSize = constrain(storage.getInt("group", 5), 1, 10);
   String call = storage.getString("call", "NOCALL");
   if (brico::validCall(call.c_str())) memcpy(config.callsign, call.c_str(), call.length() + 1);
 }
 void text(const char* label, int x, int y, int size = 2, uint16_t color = TFT_WHITE) {
+  char glyphs[256]; brico::displayText(label, glyphs, sizeof(glyphs));
   display.setTextSize(size); display.setTextColor(color, kBackground);
-  display.setCursor(x, y); display.print(label);
+  display.setCursor(x, y); display.print(glyphs);
 }
 void center(const char* label, int x, int y, int width, int size = 2, uint16_t color = TFT_WHITE) {
-  text(label, x + max(0, (width - int(strlen(label)) * size * 6) / 2), y, size, color);
+  char glyphs[256]; size_t length = brico::displayText(label, glyphs, sizeof(glyphs));
+  if (int(length) * size * 6 > width) size = 1;
+  text(label, x + max(0, (width - int(length) * size * 6) / 2), y, size, color);
 }
 void button(int x, int y, int width, int height, const char* label, bool selected = false) {
   display.fillRoundRect(x, y, width, height, 6, selected ? kAccent : kCard);
   display.drawRoundRect(x, y, width, height, 6, kAccent);
-  int size = int(strlen(label)) * 12 > width - 8 ? 1 : 2;
+  char glyphs[128]; size_t length = brico::displayText(label, glyphs, sizeof(glyphs));
+  int size = int(length) * 12 > width - 8 ? 1 : 2;
   display.setTextSize(size); display.setTextColor(selected ? kBackground : TFT_WHITE, selected ? kAccent : kCard);
-  display.setCursor(x + max(2, (width - int(strlen(label)) * size * 6) / 2), y + (height - size * 8) / 2);
-  display.print(label);
+  display.setCursor(x + max(2, (width - int(length) * size * 6) / 2), y + (height - size * 8) / 2);
+  display.print(glyphs);
 }
 bool inside(const board::Touch& touch, int x, int y, int width, int height) {
   return touch.x >= x && touch.x < x + width && touch.y >= y && touch.y < y + height;
@@ -96,8 +111,8 @@ void footer(const char* first, const char* second, const char* third, const char
   for (int i = 0; i < 5; ++i) button(i * DISPLAY_W / 5 + 2, kFooter, DISPLAY_W / 5 - 4, 33, labels[i]);
 }
 void header(const char* title) {
-  button(6, 5, 76, 30, "< ATR");
-  text(title, 94, 13, 2, kAccent);
+  button(6, 5, 76, 30, tr(Text::Back));
+  center(title, 87, 13, DISPLAY_W - 94, 2, kAccent);
   display.drawFastHLine(6, 41, DISPLAY_W - 12, kAccent);
 }
 void append(const char* value) {
@@ -118,18 +133,18 @@ void renderTranscript(int y = 93) {
   }
 }
 const char* activityName() {
-  for (const auto& entry : kReceive) if (entry.action == activity) return entry.label;
-  for (const auto& entry : kSend) if (entry.action == activity) return entry.label;
-  return "Ejercicio";
+  for (const auto& entry : kReceive) if (entry.action == activity) return tr(entry.label);
+  for (const auto& entry : kSend) if (entry.action == activity) return tr(entry.label);
+  return "CW";
 }
 void render() {
   redraw = false;
   display.fillScreen(kBackground);
   if (screen == Screen::Home) {
     text("brico", 10, 12); text("hams", 70, 12, 2, kAccent);
-    text("MORSE TUTOR 2", DISPLAY_W - 92, 18, 1, kMuted);
+    text("MORSE TUTOR 2.1", DISPLAY_W - 92, 18, 1, kMuted);
     display.drawFastHLine(8, 39, DISPLAY_W - 16, kAccent);
-    const char* names[] = {"RECIBIR", "ENVIAR", "CONFIG"};
+    const char* names[] = {tr(Text::Receive), tr(Text::Send), tr(Text::Config)};
     const char* icons[] = {"RX", "TX", "*"};
     for (int i = 0; i < 3; ++i) {
       int width = (DISPLAY_W - 24) / 3, x = 8 + i * (DISPLAY_W - 8) / 3;
@@ -137,17 +152,17 @@ void render() {
       center(icons[i], x, 75, width, 3, kAccent);
       center(names[i], x, 133, width, 2);
     }
-    String status = networkReady() ? String("Red CW: ") + networkPending() + " pendientes" : "ERROR de red: ver Serial";
+    String status = networkReady() ? String(tr(Text::Network)) + ": " + networkPending() + " " + tr(Text::Pending) : tr(Text::NetworkError);
     text(status.c_str(), 8, kFooter - 15, 1, kMuted);
     footer("-", "+", "OK", "", "");
   } else if (screen == Screen::Menu) {
-    const char* names[] = {"RECIBIR", "ENVIAR", "CONFIG"};
+    const char* names[] = {tr(Text::Receive), tr(Text::Send), tr(Text::Config)};
     header(names[menuGroup]);
-    int count = menuGroup == 2 ? int(sizeof(kSettings) / sizeof(*kSettings)) : 8;
+    int count = menuCount();
     for (int i = 0; i < 4; ++i) {
       int index = menuPage * 4 + i;
       if (index >= count) continue;
-      const char* label = menuGroup == 0 ? kReceive[index].label : menuGroup == 1 ? kSend[index].label : kSettings[index];
+      const char* label = tr(menuGroup == 0 ? kReceive[index].label : menuGroup == 1 ? kSend[index].label : kSettings[index]);
       button(8 + (i % 2) * DISPLAY_W / 2, 52 + (i / 2) * 55,
           DISPLAY_W / 2 - 16, 47, label, focus == i);
     }
@@ -157,59 +172,97 @@ void render() {
   } else if (screen == Screen::Exercise) {
     header(activityName());
     if (activity == Activity::Network) {
-      String mode = String(networkDecodeEnabled() ? "Texto + audio" : "Solo Morse") + " | RX " + networkPending();
+      String mode = String(tr(networkDecodeEnabled() ? Text::TextAudio : Text::MorseOnly)) + " | RX " + networkPending();
       text(mode.c_str(), 8, 49, 1, kAccent);
       text(networkSsid(), 8, 63, 1, kMuted);
-      text("Clave: BricohamsCW | 192.168.4.1", 8, 76, 1, kMuted);
+      text((String(tr(Text::Password)) + ": BricohamsCW | 192.168.4.1").c_str(), 8, 76, 1, kMuted);
       renderTranscript(94);
-      footer("CW", "TXT", "ENV", "DIT", "DAH");
+      footer("CW", "TXT", tr(Text::Send), "DIT", "DAH");
     } else {
       String status = String(config.speed) + "/" + config.overall + " WPM  " + config.pitch + " Hz";
       if (challengeActivity()) status += "  " + String(hits) + "/" + attempts;
       text(status.c_str(), 8, 49, 1, kMuted);
-      if (activity == Activity::Koch) text((String("Nivel ") + config.lesson).c_str(), 8, 64, 1, kAccent);
-      if (waitingAnswer) text(activity == Activity::Flash ? "OK: revelar respuesta" : "Responde con llave; pausa: evaluar", 8, 76, 1, kAccent);
+      if (activity == Activity::Koch || activity == Activity::Adaptive)
+        text((String(tr(Text::KochLevel)) + " " + config.lesson).c_str(), 8, 64, 1, kAccent);
+      if (waitingAnswer) text(tr(activity == Activity::Flash ? Text::Reveal : Text::AnswerPrompt), 8, 76, 1, kAccent);
       renderTranscript();
-      footer("-", "+", paused ? "SIG" : "OK", "DIT", "DAH");
+      footer("-", "+", paused ? tr(Text::Next) : "OK", "DIT", "DAH");
     }
     if (notice.length()) text(notice.substring(0, (DISPLAY_W - 16) / 6).c_str(), 8, kFooter - 14, 1, kAccent);
   } else if (screen == Screen::Setting) {
-    header(kSettings[setting]);
+    header(tr(kSettings[setting]));
     String value;
     if (setting == 0) value = String(config.speed) + " WPM";
     if (setting == 1) value = String(config.overall) + " WPM";
     if (setting == 2) value = String(config.pitch) + " Hz";
-    if (setting == 3) value = config.keyMode == 0 ? "Llave recta" : config.keyMode == 1 ? "Iambic A" : "Iambic B";
+    if (setting == 3) value = config.keyMode == 0 ? tr(Text::Straight) : config.keyMode == 1 ? "Iambic A" : "Iambic B";
     if (setting == 5) value = String(config.brightness) + " %";
-    if (setting == 6) value = String(config.lesson) + " simbolos";
-    if (setting == 7) value = String(config.groupSize) + " caracteres";
+    if (setting == 6) value = String(config.lesson);
+    if (setting == 7) value = String(config.groupSize);
+    if (setting == 9) value = brico::kLanguageNames[draft.language];
+    if (setting == 10) value = brico::kLanguageNames[draft.vocabulary];
+    if (setting == 11) {
+      const Text names[] = {Text::SequenceBrico, Text::SequenceLetters, Text::SequenceDigits, Text::CustomSet};
+      value = tr(names[draft.sequence]);
+    }
+    if (setting == 13) value = String("x") + draft.wordGap;
     center(value.c_str(), 0, 100, DISPLAY_W, 2, kAccent);
-    if (setting == 2) center("DIT: probar tono", 0, 146, DISPLAY_W, 1, kMuted);
+    if (setting == 2) center(tr(Text::TestTone), 0, 146, DISPLAY_W, 1, kMuted);
     if (notice.length()) center(notice.c_str(), 0, kFooter - 22, DISPLAY_W, 1, kAccent);
-    footer("-", "+", "GUAR", "DIT", "");
+    footer("-", "+", tr(Text::Save), "DIT", "");
   } else if (screen == Screen::Callsign) {
-    header("Indicativo");
-    center(editingCall, 0, 49, DISPLAY_W, 2, kAccent);
-    const char* keys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/";
+    header(tr(editor == 0 ? Text::Callsign : editor == 1 ? Text::CustomSet : Text::Memories));
+    size_t length = strlen(editingCall);
+    center(length > 25 ? editingCall + length - 25 : editingCall, 0, 49, DISPLAY_W, 2, kAccent);
+    const char* keys = kKeyboard;
     int cellWidth = DISPLAY_W / 10;
-    for (int i = 0; i < 37; ++i) {
-      char key[] = {keys[i], '\0'};
+    for (int i = 0; i < 40 && keyboardPage * 40 + i < int(strlen(keys)); ++i) {
+      char key[] = {keys[keyboardPage * 40 + i], '\0'};
+      if (key[0] == ' ') key[0] = '_';
       button((i % 10) * cellWidth + 1, 75 + (i / 10) * 28, cellWidth - 2, 26, key);
     }
     if (notice.length()) text(notice.substring(0, (DISPLAY_W - 16) / 6).c_str(), 8, kFooter - 14, 1, kAccent);
-    footer("BOR", "", "GUAR", "", "");
+    footer(tr(Text::Delete), "...", tr(Text::Save), "", "");
   } else if (screen == Screen::Reset) {
-    header("Restaurar");
-    center("Restaurar SOLO el tutor?", 0, 80, DISPLAY_W, 2, kAccent);
-    center("No borra calibracion ni historial Git.", 0, 114, DISPLAY_W, 1);
-    footer("NO", "", "SI", "", "");
+    header(tr(Text::Reset));
+    center(tr(Text::ResetQuestion), 0, 80, DISPLAY_W, 2, kAccent);
+    center(tr(Text::ResetNote), 0, 114, DISPLAY_W, 1);
+    footer(tr(Text::No), "", tr(Text::Yes), "", "");
   } else if (screen == Screen::Files) {
-    header("Tarjeta SD");
+    header(tr(Text::Card));
     for (int i = 0; i < 4; ++i) {
       int index = filePage * 4 + i;
       if (index < fileCount) button(8, 49 + i * 36, DISPLAY_W - 16, 32, files[index].substring(0, 24).c_str());
     }
-    if (!fileCount) text(cardReady ? "Sin TXT en la raiz" : "SD no disponible", 12, 85);
+    if (!fileCount) text(tr(cardReady ? Text::NoFiles : Text::NoCard), 12, 85, 1);
+    footer("<", ">", "", "", "");
+  } else if (screen == Screen::Memories) {
+    header(tr(Text::Memories));
+    for (int i = 0; i < 4; ++i) {
+      int index = memoryPage * 4 + i;
+      String label = String(index + 1) + ": " + trainer::settings().memories[index];
+      button(8, 49 + i * 36, DISPLAY_W - 16, 32, label.substring(0, 24).c_str(), memoryIndex == index);
+    }
+    footer("<", ">", tr(Text::Play), tr(Text::Edit), "");
+    if (notice.length()) text(notice.c_str(), 8, kFooter - 14, 1, kAccent);
+  } else if (screen == Screen::Statistics) {
+    header(tr(Text::Statistics));
+    const auto& stats = trainer::stats();
+    String summary = String(tr(Text::Attempts)) + ": " + stats.groups + "  " + tr(Text::Accuracy) +
+        ": " + (stats.groups ? uint32_t(uint64_t(stats.correct) * 100 / stats.groups) : 0) + "%";
+    text(summary.c_str(), 8, 50, 1, kAccent);
+    int row = 0;
+    for (size_t i = 0; i < sizeof(stats.scores) / sizeof(*stats.scores); ++i) {
+      const auto& score = stats.scores[i];
+      if (!score.attempts) continue;
+      if (row / 4 == filePage) {
+        String line = String(brico::kAlphabet[i].letter) + "  " + tr(Text::Attempts) + ": " + score.attempts +
+            "  " + tr(Text::Errors) + ": " + score.errors;
+        text(line.c_str(), 8, 75 + (row % 4) * 26, 1);
+      }
+      ++row;
+    }
+    if (!stats.groups) text(tr(Text::NoStats), 8, 85, 1);
     footer("<", ">", "", "", "");
   }
 }
@@ -221,13 +274,16 @@ void back() {
     if (!networkPublish(outgoingWord, config.callsign)) Serial.println("Network: final word not sent");
     outgoingWord[0] = '\0';
   }
-  screen = screen == Screen::Menu ? Screen::Home : Screen::Menu;
+  if (!trainer::flushStats()) { notice = tr(Text::SaveError); redraw = true; return; }
+  if (screen == Screen::Callsign && editor == 2) screen = Screen::Memories;
+  else screen = screen == Screen::Menu ? Screen::Home : Screen::Menu;
   if (screen == Screen::Menu) { focus = 0; menuPage = 0; }
   notice = ""; redraw = true;
 }
 bool play(const char* message, bool visible) {
-  if (!audio::play(message, config.speed, config.overall)) {
-    notice = "Error: mensaje/velocidad no valido"; Serial.println(notice); redraw = true; return false;
+  unsigned wordGap = activity == Activity::Network ? 1 : trainer::settings().wordGap;
+  if (!audio::play(message, config.speed, config.overall, wordGap)) {
+    notice = tr(Text::PlayError); Serial.println(notice); redraw = true; return false;
   }
   playbackVisible = visible;
   return true;
@@ -238,10 +294,12 @@ void newTarget() {
   int count = config.groupSize;
   const char* source = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   switch (activity) {
-    case Activity::Koch: {
-      char lesson[sizeof(kLessonOrder)];
-      memcpy(lesson, kLessonOrder, config.lesson); lesson[config.lesson] = '\0';
-      for (int i = 0; i < count; ++i) target[i] = randomFrom(lesson);
+    case Activity::Koch: case Activity::Adaptive: case Activity::Echo: {
+      char lesson[41];
+      int level = min(config.lesson, int(strlen(trainer::sequence())));
+      memcpy(lesson, trainer::sequence(), level); lesson[level] = '\0';
+      for (int i = 0; i < count; ++i) target[i] = activity == Activity::Adaptive ?
+          trainer::stats().choose(lesson, esp_random()) : randomFrom(lesson);
       target[count] = '\0'; break;
     }
     case Activity::Numbers: source = "0123456789"; break;
@@ -249,12 +307,12 @@ void newTarget() {
     case Activity::CopyOne: case Activity::Flash: count = 1; break;
     case Activity::CopyTwo: count = 2; break;
     case Activity::Words: case Activity::CopyWord: case Activity::HeadCopy:
-      snprintf(target, sizeof(target), "%s", kTrainingWords[esp_random() % (sizeof(kTrainingWords) / sizeof(*kTrainingWords))]); break;
+      snprintf(target, sizeof(target), "%s", brico::kWords[trainer::settings().vocabulary][esp_random() % 20]); break;
     case Activity::Calls: case Activity::CopyCall:
       snprintf(target, sizeof(target), "EA%u%c%c%c", unsigned(esp_random() % 9 + 1),
           randomFrom("ABCDEFGHIJKLMNOPQRSTUVWXYZ"), randomFrom("ABCDEFGHIJKLMNOPQRSTUVWXYZ"), randomFrom("ABCDEFGHIJKLMNOPQRSTUVWXYZ")); break;
     case Activity::Qso:
-      snprintf(target, sizeof(target), "CQ CQ DE %s K TNX QSO UR RST 599 NAME BRICO QTH ESPANA 73 SK", config.callsign); break;
+      snprintf(target, sizeof(target), "CQ CQ DE %s K TNX QSO UR RST 599 NAME BRICO 73 SK", config.callsign); break;
     default: break;
   }
   if (!target[0]) {
@@ -266,7 +324,7 @@ void loadFiles() {
   fileCount = filePage = 0;
   if (!cardReady) return;
   File root = SD.open("/");
-  if (!root || !root.isDirectory()) { notice = "Error abriendo SD"; Serial.println(notice); return; }
+  if (!root || !root.isDirectory()) { notice = tr(Text::FileError); Serial.println(notice); return; }
   while (fileCount < 20) {
     File entry = root.openNextFile();
     if (!entry) break;
@@ -280,18 +338,22 @@ void loadFiles() {
 }
 void startActivity(Activity chosen) {
   stopPlayback(); activity = chosen; screen = Screen::Exercise;
-  transcript = ""; notice = ""; paused = waitingAnswer = reveal = playingNetwork = false;
+  transcript = ""; notice = ""; paused = waitingAnswer = playingNetwork = false;
   answer[0] = outgoingWord[0] = '\0'; hits = attempts = 0;
   nextExercise = millis() + 300;
   if (activity == Activity::Card) { loadFiles(); screen = Screen::Files; }
-  if (activity == Activity::Network && !networkReady()) notice = "Error de red; revisar Serial";
-  if (activity == Activity::Practice) append("Manipula DIT/DAH o llave. ");
+  if (activity == Activity::Network && !networkReady()) notice = tr(Text::NetworkError);
+  if (activity == Activity::Practice) notice = tr(Text::PracticePrompt);
+  if (activity == Activity::Memories) { screen = Screen::Memories; memoryPage = memoryIndex = 0; }
+  if (activity == Activity::Statistics) { screen = Screen::Statistics; filePage = 0; }
   redraw = true;
 }
 void chooseMenu(int index) {
   if (menuGroup < 2) { startActivity(menuGroup == 0 ? kReceive[index].action : kSend[index].action); return; }
   setting = index;
-  if (index == 4) { screen = Screen::Callsign; strcpy(editingCall, config.callsign); }
+  draft = trainer::settings(); keyboardPage = 0;
+  if (index == 4) { screen = Screen::Callsign; editor = 0; strcpy(editingCall, config.callsign); }
+  else if (index == 12) { screen = Screen::Callsign; editor = 1; strcpy(editingCall, draft.custom); }
   else if (index == 8) screen = Screen::Reset;
   else screen = Screen::Setting;
   notice = ""; redraw = true;
@@ -303,14 +365,18 @@ void adjust(int direction) {
     if (setting == 2) config.pitch = constrain(config.pitch + 25 * direction, 300, 1800);
     if (setting == 3) config.keyMode = (config.keyMode + direction + 3) % 3;
     if (setting == 5) { config.brightness = constrain(config.brightness + 5 * direction, 10, 100); board::setBrightness(config.brightness); }
-    if (setting == 6) config.lesson = constrain(config.lesson + direction, 2, int(strlen(kLessonOrder)));
+    if (setting == 6) config.lesson = constrain(config.lesson + direction, 2, int(strlen(trainer::sequence())));
     if (setting == 7) config.groupSize = constrain(config.groupSize + direction, 1, 10);
+    if (setting == 9) draft.language = (draft.language + direction + 5) % 5;
+    if (setting == 10) draft.vocabulary = (draft.vocabulary + direction + 5) % 5;
+    if (setting == 11) draft.sequence = (draft.sequence + direction + 4) % 4;
+    if (setting == 13) draft.wordGap = constrain(draft.wordGap + direction, 1, 5);
   } else if (screen == Screen::Exercise) {
     if (activity == Activity::Network) {
-      if (!networkSetDecode(direction > 0)) notice = "Error guardando modo RX";
+      if (!networkSetDecode(direction > 0)) notice = tr(Text::SaveError);
     } else {
       config.speed = constrain(config.speed + direction, 3, 50); config.overall = min(config.overall, config.speed);
-      notice = "Nueva velocidad: siguiente transmision";
+      notice = tr(Text::NewSpeed);
     }
   }
   redraw = true;
@@ -318,20 +384,52 @@ void adjust(int direction) {
 void flushWord() {
   if (!outgoingWord[0]) return;
   bool sent = networkPublish(outgoingWord, config.callsign);
-  notice = sent ? "TX en cola; entrega no confirmada" : "ERROR TX: red/cola/texto";
+  notice = tr(sent ? Text::Queued : Text::TxError);
   outgoingWord[0] = '\0'; redraw = true;
 }
 void confirm() {
   if (screen == Screen::Home) { menuGroup = focus; menuPage = focus = 0; screen = Screen::Menu; }
   else if (screen == Screen::Menu) {
     int index = menuPage * 4 + focus;
-    if (index < (menuGroup == 2 ? 9 : 8)) chooseMenu(index);
-  } else if (screen == Screen::Setting) { if (save()) back(); }
+    if (index < menuCount()) chooseMenu(index);
+  } else if (screen == Screen::Setting) {
+    if (!save()) return;
+    if (setting >= 9) {
+      auto candidate = trainer::settings();
+      if (setting == 9) candidate.language = draft.language;
+      if (setting == 10) candidate.vocabulary = draft.vocabulary;
+      if (setting == 11) candidate.sequence = draft.sequence;
+      if (setting == 13) candidate.wordGap = draft.wordGap;
+      if (!trainer::save(candidate)) { notice = tr(Text::SaveError); redraw = true; return; }
+    }
+    back();
+  }
   else if (screen == Screen::Callsign) {
-    if (!brico::validCall(editingCall)) { notice = "Indicativo invalido"; Serial.println(notice); return; }
-    strcpy(config.callsign, editingCall); if (save()) back();
+    if (editor == 0) {
+      if (!brico::validCall(editingCall)) { notice = tr(Text::InvalidCall); redraw = true; return; }
+      strcpy(config.callsign, editingCall); if (save()) back();
+    } else {
+      auto candidate = trainer::settings();
+      if (editor == 1) {
+        if (!brico::validSet(editingCall)) { notice = tr(Text::InvalidSet); redraw = true; return; }
+        strcpy(candidate.custom, editingCall); candidate.sequence = 3;
+      } else if (!editingCall[0]) candidate.memories[memoryIndex][0] = '\0';
+      else if (!brico::normalizeLatin(editingCall, candidate.memories[memoryIndex], sizeof(candidate.memories[memoryIndex]))) {
+        notice = tr(Text::InvalidInput); redraw = true; return;
+      }
+      if (!trainer::save(candidate)) { notice = tr(Text::SaveError); redraw = true; return; }
+      back();
+    }
   } else if (screen == Screen::Reset) {
-    config = Config{}; board::setBrightness(config.brightness); if (save()) back();
+    config = Config{}; board::setBrightness(config.brightness);
+    auto defaults = trainer::Settings{};
+    memcpy(defaults.memories, trainer::settings().memories, sizeof(defaults.memories));
+    if (save() && trainer::save(defaults)) back();
+    else { notice = tr(Text::SaveError); redraw = true; }
+  } else if (screen == Screen::Memories) {
+    const char* message = trainer::settings().memories[memoryIndex];
+    if (!*message) notice = tr(Text::EmptyMemory);
+    else play(message, false);
   } else if (screen == Screen::Exercise) {
     if (activity == Activity::Network) flushWord();
     else if (activity == Activity::Flash && waitingAnswer) {
@@ -339,7 +437,8 @@ void confirm() {
     } else if (receiveActivity()) {
       paused = !paused; if (paused) audio::stop(); else nextExercise = millis();
     } else if (challengeActivity()) {
-      waitingAnswer = false; nextExercise = millis(); answer[0] = '\0';
+      if (waitingAnswer && (activity == Activity::Echo || activity == Activity::Adaptive)) scoreAnswer();
+      else { audio::stop(); waitingAnswer = false; nextExercise = millis(); answer[0] = '\0'; }
     } else { transcript = ""; notice = ""; }
   }
   redraw = true;
@@ -351,13 +450,24 @@ void tap(const board::Touch& touch) {
     int key = brico::controlAt(touch.x, touch.y, DISPLAY_W, DISPLAY_H, BRICO_CONTROL_HEIGHT);
     if (screen == Screen::Home && key < 2) focus = (focus + (key == 0 ? 2 : 1)) % 3;
     else if (screen == Screen::Menu && key < 2) {
-      int pages = menuGroup == 2 ? 3 : 2;
+      int pages = (menuCount() + 3) / 4;
       menuPage = (menuPage + (key == 0 ? pages - 1 : 1)) % pages; focus = 0;
     } else if (screen == Screen::Files && key < 2) {
       int pages = max(1, (fileCount + 3) / 4);
       filePage = (filePage + (key == 0 ? pages - 1 : 1)) % pages;
     } else if (screen == Screen::Callsign && key == 0) {
       size_t length = strlen(editingCall); if (length) editingCall[length - 1] = '\0';
+    } else if (screen == Screen::Callsign && key == 1) {
+      keyboardPage = 1 - keyboardPage;
+    } else if (screen == Screen::Memories && key < 2) {
+      memoryPage = 1 - memoryPage; memoryIndex = memoryPage * 4;
+    } else if (screen == Screen::Memories && key == 3) {
+      audio::stop(); editor = 2; keyboardPage = 0;
+      strcpy(editingCall, trainer::settings().memories[memoryIndex]); screen = Screen::Callsign;
+    } else if (screen == Screen::Statistics && key < 2) {
+      int count = 0; for (const auto& score : trainer::stats().scores) if (score.attempts) ++count;
+      int pages = max(1, (count + 3) / 4);
+      filePage = (filePage + (key == 0 ? pages - 1 : 1)) % pages;
     } else if (screen == Screen::Reset && key == 0) back();
     else if (key == 2) confirm();
     else if (key < 2) adjust(key == 0 ? -1 : 1);
@@ -368,23 +478,28 @@ void tap(const board::Touch& touch) {
   } else if (screen == Screen::Menu) {
     for (int i = 0; i < 4; ++i) {
       int index = menuPage * 4 + i;
-      if (index < (menuGroup == 2 ? 9 : 8) && inside(touch, 8 + (i % 2) * DISPLAY_W / 2,
+      if (index < menuCount() && inside(touch, 8 + (i % 2) * DISPLAY_W / 2,
           52 + (i / 2) * 55, DISPLAY_W / 2 - 16, 47)) { focus = i; chooseMenu(index); return; }
     }
   } else if (screen == Screen::Callsign) {
-    const char* keys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/";
+    const char* keys = kKeyboard;
     int cell = DISPLAY_W / 10;
     if (touch.y >= 75 && touch.y < 187) {
-      int index = ((touch.y - 75) / 28) * 10 + touch.x / cell;
+      int index = keyboardPage * 40 + ((touch.y - 75) / 28) * 10 + touch.x / cell;
       size_t length = strlen(editingCall);
-      if (index >= 0 && index < 37 && length < brico::kCallSize - 1) {
+      size_t limit = editor == 0 ? brico::kCallSize - 1 : editor == 1 ? 40 : brico::kMaxText;
+      if (index >= 0 && index < int(strlen(keys)) && length < limit) {
         editingCall[length] = keys[index]; editingCall[length + 1] = '\0'; redraw = true;
       }
+    }
+  } else if (screen == Screen::Memories) {
+    for (int i = 0; i < 4; ++i) if (inside(touch, 8, 49 + i * 36, DISPLAY_W - 16, 32)) {
+      memoryIndex = memoryPage * 4 + i; confirm(); return;
     }
   } else if (screen == Screen::Files) {
     for (int i = 0; i < 4; ++i) if (inside(touch, 8, 49 + i * 36, DISPLAY_W - 16, 32) && filePage * 4 + i < fileCount) {
       lessonFile = SD.open(files[filePage * 4 + i]);
-      if (!lessonFile) { notice = "Error abriendo archivo"; Serial.println(notice); redraw = true; return; }
+      if (!lessonFile) { notice = tr(Text::FileError); Serial.println(notice); redraw = true; return; }
       screen = Screen::Exercise; transcript = ""; notice = ""; nextExercise = millis(); redraw = true; return;
     }
   }
@@ -393,7 +508,8 @@ void scoreAnswer() {
   ++attempts;
   bool correct = strcmp(answer, target) == 0;
   if (correct) ++hits;
-  notice = correct ? "Correcto!" : String("Era: ") + target;
+  trainer::record(target, answer);
+  notice = correct ? tr(Text::Correct) : String(tr(Text::Expected)) + ": " + target;
   answer[0] = '\0'; waitingAnswer = false; nextExercise = millis() + 2000; redraw = true;
 }
 void decodedLetter(char letter) {
@@ -410,7 +526,7 @@ void decodedLetter(char letter) {
     else {
       size_t length = strlen(answer);
       if (length < sizeof(answer) - 1) { answer[length] = letter; answer[length + 1] = '\0'; append(letter); }
-      else { notice = "Respuesta demasiado larga"; Serial.println(notice); redraw = true; }
+      else { notice = tr(Text::TooLong); Serial.println(notice); redraw = true; }
     }
   }
 }
@@ -423,12 +539,17 @@ void exerciseTick(const board::Touch& touch) {
       if (event.letter && playbackVisible) append(event.letter);
       if (event.finished) {
         if (playingNetwork) { playingNetwork = false; append(' '); }
-        else if (challengeActivity()) { waitingAnswer = true; redraw = true; }
+        else if (challengeActivity()) {
+          waitingAnswer = true; answerDeadline = now + 60000; redraw = true;
+        }
         else { nextExercise = now + 800; append(' '); }
       }
     }
   }
   if (audio::busy()) return;
+  if (waitingAnswer && (activity == Activity::Echo || activity == Activity::Adaptive) && brico::due(now, answerDeadline)) {
+    scoreAnswer(); return;
+  }
   int control = brico::controlAt(touch.x, touch.y, DISPLAY_W, DISPLAY_H, BRICO_CONTROL_HEIGHT);
   bool virtualDit = touch.down && control == 3;
   bool virtualDah = touch.down && control == 4;
@@ -448,24 +569,30 @@ void exerciseTick(const board::Touch& touch) {
   } else if (activity != Activity::Practice && !waitingAnswer && !paused && brico::due(now, nextExercise)) {
     if (activity == Activity::Card) {
       if (!lessonFile || !lessonFile.available()) {
-        notice = "Fin de archivo"; paused = true; redraw = true;
+        notice = tr(Text::EndFile); paused = true; redraw = true;
         if (lessonFile) lessonFile.close();
         return;
       }
       char raw[121]; size_t count = 0;
       while (lessonFile.available() && count < 110) {
-        char ch = lessonFile.read();
-        if (ch >= 'a' && ch <= 'z') ch -= 32;
-        if (ch == '\r' || ch == '\n' || ch == '\t') ch = ' ';
-        if (brico::supported(ch)) raw[count++] = ch;
-        else { Serial.println("SD: unsupported character skipped"); }
+        uint8_t ch = lessonFile.read();
+        raw[count++] = char(ch);
+        unsigned extra = ch >= 0xc2 && ch <= 0xdf ? 1 : ch >= 0xe0 && ch <= 0xef ? 2 : 0;
+        while (extra-- && lessonFile.available()) raw[count++] = char(lessonFile.read());
       }
       raw[count] = '\0';
-      if (!brico::normalize(raw, target, sizeof(target))) { nextExercise = now + 10; return; }
+      bool whitespace = true;
+      for (size_t i = 0; i < count; ++i)
+        if (raw[i] != ' ' && raw[i] != '\t' && raw[i] != '\r' && raw[i] != '\n') whitespace = false;
+      if (whitespace) { nextExercise = now + 10; return; }
+      if (strlen(raw) != count || !brico::normalizeLatin(raw, target, sizeof(target))) {
+        notice = tr(Text::InvalidInput); Serial.println("SD: invalid UTF-8/Morse text or expanded block too long");
+        paused = true; redraw = true; return;
+      }
     } else newTarget();
     if (activity == Activity::CopyOne || activity == Activity::CopyTwo ||
         activity == Activity::CopyWord || activity == Activity::CopyCall) {
-      append("Copia "); append(target); append(": ");
+      append(tr(Text::Expected)); append(" "); append(target); append(": ");
     }
     bool visible = receiveActivity();
     if (!play(target, visible)) { paused = true; }
@@ -475,16 +602,17 @@ void exerciseTick(const board::Touch& touch) {
 
 void setup() {
   Serial.begin(115200);
+  trainer::begin();
   board::begin();
   load();
   board::setBrightness(config.brightness);
   cardReady = board::mountCard();
   if (!networkBegin()) {
-    notice = "Error de red: tutor local disponible";
+    notice = tr(Text::NetworkError);
     Serial.println(notice);
   }
   if (!audio::begin()) {
-    notice = "ERROR de audio; reinicia y revisa Serial";
+    notice = tr(Text::AudioError);
     Serial.println(notice);
   }
   redraw = true;
@@ -492,13 +620,19 @@ void setup() {
 
 void loop() {
   networkService();
+  if (settingsRevision != trainer::revision()) {
+    settingsRevision = trainer::revision();
+    config.lesson = min(config.lesson, int(strlen(trainer::sequence())));
+    if (screen != Screen::Setting && screen != Screen::Callsign) draft = trainer::settings();
+    notice = ""; redraw = true;
+  }
   board::Touch touch = board::readTouch();
   tap(touch);
   static bool lastDecode = networkDecodeEnabled();
   if (lastDecode != networkDecodeEnabled()) {
     lastDecode = networkDecodeEnabled();
     if (screen == Screen::Exercise && activity == Activity::Network) {
-      transcript = ""; notice = "Modo RX actualizado"; redraw = true;
+      transcript = ""; notice = tr(Text::DecodeSaved); redraw = true;
     }
   }
   bool input = (screen == Screen::Exercise && (activity == Activity::Network ||

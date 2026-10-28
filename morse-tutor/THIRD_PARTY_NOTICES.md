@@ -78,3 +78,12 @@ Los avisos del framework y de TFT_eSPI se incluyen en la distribucion web.
 No se ha copiado firmware, PCB ni caja de Morserino-32. No se declara
 compatibilidad con su protocolo, LoRa o hardware. `BRICOHAMS` es un wordmark
 textual; no se ha inventado un logotipo grafico oficial.
+
+La ampliacion v2.1 toma como referencia funcional la
+[descripcion oficial de Morserino-32](https://www.morserino.info/) (consultada
+el 28 de octubre de 2026): eco, entrenamiento progresivo/adaptativo, memorias
+y separacion entre palabras. El catalogo de cinco idiomas, los vocabularios
+breves, los algoritmos y las secuencias de esta entrega son una implementacion
+propia; no se ha importado codigo, corpus ni traducciones de Morserino.
+Las secuencias seleccionables son Bricohams, letras primero, numeros primero
+y una secuencia personalizada, no reproducciones declaradas de sus cursos.

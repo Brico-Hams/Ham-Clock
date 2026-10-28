@@ -1,4 +1,4 @@
-# Bricohams Morse Tutor v2 — firmware independiente
+# Bricohams Morse Tutor v2.1 — firmware independiente
 
 Nueva implementación Bricohams: interfaz por tarjetas, aprendizaje Morse,
 manipulador/decodificador y sala local de mensajes para múltiples pantallas.
@@ -8,6 +8,78 @@ dual. El reloj mantiene su código y sus perfiles separados.
 - [Instalar el reloj](https://anatolbricoham.github.io/Ham-Clock/)
 - [Instalar Morse Tutor](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/)
 - [Autoría, procedencia y licencias](THIRD_PARTY_NOTICES.md)
+
+## Novedades v2.1: cinco idiomas y entrenamiento ampliado
+
+Se toman como referencia funciones generales de
+[Morserino-32](https://www.morserino.info/), con código, vocabularios y
+traducciones propios de Bricohams, **no una copia ni un firmware compatible
+con Morserino**.
+
+- **Español, inglés, alemán, francés e italiano** para menús, avisos de pantalla
+  y web local del móvil. Elegir en Ajustes → Idioma pantalla o en el selector
+  superior de la web. El cambio se guarda en la pantalla y se comparte entre
+  sus clientes web; cada pantalla de la red mantiene su propio idioma.
+  Los nombres de los idiomas siempre se muestran en su lengua nativa.
+- **Vocabulario independiente:** Ajustes → Idioma palabras o el formulario de
+  ajustes de la web. Incluye veinte palabras básicas originales por idioma;
+  no se presenta como un diccionario completo. Cambia las actividades de
+  palabras, copiar palabra y copia mental, no los indicativos, abreviaturas
+  internacionales de QSO o archivos del usuario.
+- **Entrenador eco:** Enviar → Entrenador eco. Escuchar un grupo del nivel Koch
+  sin ver la solución; repetirlo con llave/palas. Tras siete unidades de
+  silencio, o pulsando OK, se compara y se muestra el resultado. Si no se
+  responde en 60 segundos tras terminar el audio, se registra como fallo.
+  No es reconocimiento de voz o audio de micrófono.
+- **Koch configurable:** Bricohams, letras primero, números primero o conjunto
+  propio de 2–40 símbolos Morse ASCII distintos. Ajustes → Secuencia Koch;
+  Ajustes → Conjunto propio abre el teclado y selecciona automáticamente ese
+  conjunto al guardarlo. La web permite editarlo y seleccionarlo por separado.
+  El nivel Koch limita el prefijo usado; se ajusta al cambiar a una secuencia
+  más corta. No se declaran cursos LCWO/CW Academy/LICW copiados.
+- **Adaptativo:** Enviar → Adaptativo funciona como eco, eligiendo solo
+  caracteres del nivel Koch actual y dando más peso a los fallados.
+  El peso está acotado: base1 más0–4 según el porcentaje de error;
+  los caracteres aún no intentados tienen peso2. No modifica automáticamente
+  la velocidad ni promete un sistema equivalente al de Morserino.
+- **Estadísticas:** Enviar → Estadísticas o el panel de la web muestra grupos
+  correctos/intentos y errores por carácter. Las respuestas se comparan por
+  posición con el objetivo: omisiones y sustituciones penalizan el carácter
+  esperado; caracteres sobrantes hacen fallar el grupo sin sumar intentos de
+  caracteres ajenos al objetivo. Incluye todos los ejercicios evaluados,
+  no solo el adaptativo. Se guardan al salir con Atrás: cortar la alimentación
+  antes puede perder los resultados de esa sesión. Los contadores se reducen
+  proporcionalmente al saturarse para evitar desbordamiento.
+- **Ocho memorias:** Enviar → Memorias, dos páginas de cuatro posiciones.
+  Tocar una reproduce su contenido; Editar abre el teclado. `...` cambia
+  página de símbolos, `_` introduce espacio, Borrar elimina el último carácter
+  y Guardar persiste. También se editan desde el panel Memorias de la web.
+  Máximo120 caracteres Morse **tras normalizar**; guardar vacío vacía esa
+  posición. La reproducción es local, no transmite a RF ni a la red.
+- **Wordsworth:** Ajustes → Pausa palabras o el formulario web.
+  Multiplicador1–5 aplicado al espacio estándar de siete unidades entre
+  palabras, además de Farnsworth; no cambia el tono, las marcas o los
+  espacios entre letras. En Red CW se conserva la separación normal para no
+  modificar la reproducción de mensajes recibidos.
+
+Las traducciones visibles conservan los acentos mediante conversión al juego
+de caracteres de la fuente GLCD. Para enviar mensajes, editar memorias o leer
+TXT UTF-8 se normaliza al Morse básico: `Ñ→N`, `Ä→A`, `É→E`, `ß→SS`,
+`œ→OE`, `æ→AE`. Se rechazan caracteres sin equivalencia y UTF-8 inválido.
+Los ejercicios integrados usan ASCII normalizado. No se añade Morse nacional
+extendido ni cambia el formato de paquete: **v2.1 sigue comunicándose con v2.0**.
+Un texto cuya expansión supere120 caracteres se rechaza; en SD se pausa el
+ejercicio con un aviso si un bloque contiene texto no admitido.
+
+El idioma, secuencia, pausas, memorias y estadísticas tienen su propio espacio
+de preferencias. Se conservan los ajustes v2 anteriores. Restaurar cambia los
+ajustes del tutor, pero **conserva memorias, estadísticas y calibración**.
+La configuración del reloj y su firmware siguen separados.
+
+No se incluyen en esta entrega juegos, bot QSO interactivo, modos Ultimatic
+o no-squeeze, Bluetooth, iCW, Internet, LoRa, filtros/entrada de audio desde
+un receptor ni salida de manipulación para transmisor. Algunos exigen
+hardware extra y otros desarrollo/validación adicional.
 
 ## Alcance y validación
 
@@ -71,7 +143,7 @@ no una celda de litio desnuda ni un cargador/BMS de diseño propio.
 2. Tocar una tarjeta o usar `-`, `+`, `OK` para elegir categoría. Los submenús
    tienen cuatro tarjetas por página y flechas para cambiar de página.
    `< ATR` vuelve; la pulsación es individual, no autorrepetida.
-3. **RECIBIR:** Koch, letras, palabras españolas sin tildes, números, mixto,
+3. **RECIBIR:** Koch, letras, palabras del idioma de vocabulario, números, mixto,
    archivos TXT, QSO e indicativos generados. `OK` pausa/reanuda; `-`/`+`
    cambian la velocidad del siguiente grupo. No se repiten indicativos reales
    como identidad de fábrica: los indicativos de ejercicio son ficticios.
@@ -89,8 +161,9 @@ no una celda de litio desnuda ni un cargador/BMS de diseño propio.
    tamaño de grupo y restaurar los ajustes **del tutor**. El indicativo se
    introduce con teclado táctil, hasta9 caracteres A–Z/0–9/`/`.
    `GUAR` guarda; volver sin guardar conserva el cambio solo en RAM.
-7. La SD utiliza FAT y TXT ASCII en la raíz: hasta20 archivos, nombres
-   menores de64 bytes. Se omiten caracteres no Morse con diagnóstico Serial.
+7. La SD utiliza FAT y TXT ASCII/UTF-8 en la raíz: hasta20 archivos, nombres
+   menores de64 bytes. Se normalizan los acentos latinos y se rechazan otros
+   caracteres con diagnóstico Serial y aviso en pantalla.
    Al terminar el archivo se muestra el fin; para releerlo volver a seleccionarlo.
    No quitar la tarjeta durante la lectura.
 
@@ -159,7 +232,7 @@ Se fija `espressif32@6.13.0` / Arduino-ESP32 2.0.17 y TFT_eSPI2.5.43.
 No sustituir por core3.x sin portar callbacks ESP-NOW y LEDC.
 Para grabar por USB añadir `-t upload --upload-port COM5` al perfil elegido.
 
-El empaquetador genera cuatro manifiestos v2 y16 imágenes con offsets
+El empaquetador genera cuatro manifiestos v2.1.0 y16 imágenes con offsets
 `0x1000/0x8000/0xe000/0x10000`, más SHA-256 y avisos de dependencias.
 No se incluyen binarios generados en Git. El workflow de Pages construye el
 reloj y los cuatro tutores, prueba, empaqueta y publica ambos instaladores en
@@ -177,6 +250,22 @@ g++ -std=c++11 -Wall -Wextra -Werror -I morse-tutor/include morse-tutor/test/pro
 
 Ejecutar el binario resultante. En Windows se ha utilizado el compilador C++
 de Zig ya instalado, sin añadir dependencias al proyecto.
+Las suites adicionales se compilan con:
+
+```text
+g++ -std=c++11 -Wall -Wextra -Werror -I morse-tutor/include morse-tutor/test/training.cpp -o training-tests
+g++ -std=c++11 -Wall -Wextra -Werror -I morse-tutor/include -I morse-tutor/src -I morse-tutor/test/support morse-tutor/test/trainer_settings.cpp morse-tutor/src/trainer_settings.cpp -o settings-tests
+```
+
+La primera comprueba los cinco catálogos y vocabularios, glifos, UTF-8,
+normalización, conjuntos Koch, puntuación adaptativa y tiempos exactos Wordsworth.
+La segunda utiliza un almacenamiento simulado para probar ocho memorias,
+independencia de idiomas, persistencia, escrituras fallidas y datos corruptos.
+Los tres ejecutables se ejecutan en CI. Para probar el HTML y catálogo reales
+con una API **simulada**, ejecutar `node morse-tutor\test\browser-fixture.mjs`
+y abrir `http://127.0.0.1:8174`; terminar el proceso al acabar.
+No usar esa fixture como prueba del firmware HTTP, NVS o radio ESP-NOW reales.
+
 `test/control_logic.cpp` contiene además comprobaciones estáticas de coordenadas
 y conflictos de GPIO para los cuatro paneles.
 

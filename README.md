@@ -14,12 +14,15 @@ no se ha incorporado el tutor al bucle ni a las dependencias del reloj.
 El [instalador del tutor](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/)
 se publica junto al existente mediante el workflow de GitHub Pages.
 
-El tutor v2 es una nueva implementación Bricohams con menús por tarjetas,
+El tutor v2.1 es una nueva implementación Bricohams con menús por tarjetas,
 perfil Freenove 3,2" FNK0114L/ST7789 y sala de mensajes para múltiples
 tutores por ESP-NOW. Cada pantalla ofrece WiFi `Bricohams-CW-XXXXXX`
 (clave `BricohamsCW`) para enviar desde el móvil sin Internet.
 No es una red mesh ni RF de radioaficionado; consultar
 [funcionamiento, límites y autoría](morse-tutor/README.md).
+Incluye español, inglés, alemán, francés e italiano, con idioma de interfaz
+y vocabulario independientes; entrenador eco, Koch configurable, práctica
+adaptativa, ocho memorias, estadísticas y pausas Wordsworth.
 El perfil Freenove es del tutor: no se añade automáticamente al reloj.
 
 El subproyecto incluye una interfaz cableada de llave/audio con Gerber y cajas

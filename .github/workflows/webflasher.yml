@@ -7,6 +7,8 @@ on:
     paths:
       - "morse-tutor/**"
       - "webflasher/**"
+      - "platformio.ini"
+      - "tools/build_webflasher.py"
       - ".github/workflows/webflasher.yml"
   workflow_dispatch:
 

@@ -20,6 +20,11 @@ Son **prototipos pendientes de validación física**, no hardware certificado.
 Consulta [alimentación, conexiones y fabricación](morse-tutor/hardware/README.md)
 y [las medidas de las cajas](morse-tutor/mechanical/README.md) antes de fabricar.
 
+Los perfiles del reloj y del tutor fijan `espressif32@6.13.0` (Arduino-ESP32
+2.0.17). El reloj utiliza la API LEDC 2.x; una plataforma sin versión puede
+seleccionar Arduino 3.x y romper la compilación del instalador. No se ha cambiado
+la lógica del reloj para corregirlo.
+
 It provides a touch-controlled landscape dashboard — 320x240 on the 2.8" board, 480x320 on the 4.0" — with UTC/local time, HamQSL propagation data, a greyline map, DX spots, Wi-Fi setup, and a local web settings page. The 4.0" board uses the extra room rather than simply scaling up: larger text on the data pages, and twelve DX/POTA spots in place of eight.
 
 <a href="https://www.buymeacoffee.com/bricohams" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" style="height: 60px !important;width: 217px !important;" ></a>

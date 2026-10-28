@@ -4,14 +4,14 @@
 
 A HamClock-inspired ham radio dashboard for the ESP32 Cheap Yellow Display, supporting both the 2.8" ESP32-2432S028R and the 4.0" 320x480 ST7796S variant from a single source tree.
 
-**[Flash it in your browser with the Web Flasher](https://anatolbricoham.github.io/Ham-Clock/webflasher/index.html)**
+**[Flash it in your browser with the Web Flasher](https://anatolbricoham.github.io/Ham-Clock/)**
 
 ## Reloj o Morse Tutor Bricohams
 
 El suscriptor puede elegir entre **dos firmwares independientes**: este reloj,
 o [Bricohams Morse Tutor](morse-tutor/README.md). Grabar uno sustituye al otro;
 no se ha incorporado el tutor al bucle ni a las dependencias del reloj.
-El [instalador del tutor](https://anatolbricoham.github.io/Ham-Clock/webflasher/morse-tutor/index.html)
+El [instalador del tutor](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/)
 se publica junto al existente mediante el workflow de GitHub Pages.
 
 El subproyecto incluye una interfaz cableada de llave/audio con Gerber y cajas

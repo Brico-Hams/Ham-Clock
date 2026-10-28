@@ -26,6 +26,7 @@ for (const profile of catalog.profiles.filter(p => !selected.length || selected.
     args.push(join(mechanical, 'bricohams.scad'));
     execFileSync(openscad, args, { stdio: ['ignore', 'ignore', 'pipe'] });
     assert(existsSync(target));
+    writeFileSync(target, readFileSync(target, 'utf8').replaceAll('\r\n', '\n'));
   }
   writeFileSync(join(folder, 'profile.json'), JSON.stringify(profile, null, 2) + '\n');
   console.log(`Exported ${id}: matching clock/tutor bases and lids (prototype)`);

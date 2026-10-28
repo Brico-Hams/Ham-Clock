@@ -1,0 +1,2 @@
+# Keep exported ASCII meshes byte-identical to their downloadable ZIP entries.
+/morse-tutor/mechanical/family/**/*.stl text eol=lf

@@ -73,6 +73,8 @@ al reloj mediante el workflow de GitHub Pages. El primer comando copia los cuatr
 binarios con offsets explícitos, genera tres manifiestos y un archivo SHA-256.
 El hook de PlatformIO obtiene `boot_app0.bin` del framework realmente usado.
 Los binarios generados no se incluyen en Git.
+El workflow se ejecuta en cambios de tutor/instalador en `main`, en etiquetas
+`v*` o manualmente; publica ambos instaladores en el mismo sitio.
 
 El instalador requiere HTTPS o localhost, Chrome/Edge de escritorio y un cable USB
 de datos. La selección de un panel no detecta automáticamente el modelo.

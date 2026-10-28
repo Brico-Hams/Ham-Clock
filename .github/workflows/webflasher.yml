@@ -3,6 +3,11 @@ name: Web Flasher
 on:
   push:
     tags: ["v*"]
+    branches: ["main"]
+    paths:
+      - "morse-tutor/**"
+      - "webflasher/**"
+      - ".github/workflows/webflasher.yml"
   workflow_dispatch:
 
 permissions:

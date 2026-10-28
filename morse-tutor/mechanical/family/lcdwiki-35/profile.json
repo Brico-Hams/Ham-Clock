@@ -1,0 +1,16 @@
+{
+  "id": "lcdwiki-35",
+  "name": "LCDWIKI E32R35T / E32N35T 3.5",
+  "pcb": [
+    101.5,
+    55.5
+  ],
+  "window": [
+    79.24,
+    51.5
+  ],
+  "stack": 12,
+  "firmware": [],
+  "basis": "Manufacturer module outline 101.50 x 55.50; window = touch visual area plus 2mm; centered window/stack/ledge clearance still provisional",
+  "source": "https://www.lcdwiki.com/3.5inch_ESP32-32E_Display"
+}

@@ -23,6 +23,8 @@
 <body>
   <h1>Bricohams</h1>
   <p>Tu pantalla, tu elección: dos firmwares completamente independientes.</p>
+  <p><a class="button" href="docs/manual.html">Tutorial ilustrado y manual</a>
+    <a class="button" href="docs/cajas.html">Cajas, planos y descargas STL</a></p>
   <p class="notice"><strong>Grabar uno sustituye al otro.</strong> No es una actualización conjunta.
     Guarda antes la configuración y selecciona el modelo exacto de tu placa.
     No actives el borrado completo de flash salvo que quieras eliminar los ajustes guardados.</p>
@@ -35,7 +37,8 @@
     </article>
     <article>
       <h2>Morse Tutor</h2>
-      <p>Versión 2.1.0: español, inglés, alemán, francés e italiano en pantalla y web del móvil,
+      <p>Versión 2.1.1: pulsador táctil de llave recta para manipular sin llave externa.
+        Español, inglés, alemán, francés e italiano en pantalla y web del móvil,
         vocabulario independiente, entrenador eco, Koch configurable, práctica adaptativa,
         estadísticas, ocho memorias y pausas Wordsworth. Conserva llave recta/palas, SD y Red CW.</p>
       <label for="board">Modelo de pantalla</label>
@@ -51,13 +54,16 @@
       </esp-web-install-button>
       <p id="browser-warning" hidden>El instalador necesita HTTPS (o localhost) y un navegador con Web Serial.</p>
       <small>En el primer arranque, toca las tres cruces para calibrar el táctil.
+        En Ajustes → Manipulador elige Llave recta para usar el botón Llave CW: mantenlo pulsado
+        para la marca y suelta para el silencio. En Iambic A/B aparecen DIT/DAH.
         La llave física necesita GPIO libres y cableado adecuado; consulta el manual antes de conectar.</small>
       <small>WiFi: <strong>Bricohams-CW-XXXXXX</strong> · clave <strong>BricohamsCW</strong> ·
         abre <strong>http://192.168.4.1</strong> conectado a la pantalla.
         Los tutores v2 reciben en canal 1 sin emparejamiento; no necesita Internet.
         En Enviar → Red CW puedes escuchar, mostrar/ocultar el texto y transmitir con la llave.</small>
-      <small>Prototipo sin validación física. La caja y el adaptador existentes son para CYD de 2,8":
-        no se certifica su ajuste ni su conexión a Freenove. No garantiza entrega ni confidencialidad;
+      <small>Prototipo sin validación física. Hay cajas paramétricas para nueve variantes,
+        con cotas provisionales claramente indicadas; el adaptador eléctrico sigue siendo para CYD de 2,8".
+        Tener una caja no añade soporte de firmware. No garantiza entrega ni confidencialidad;
         todos los equipos de la sala deben usar v2.</small>
       <small>Cambia el idioma en Ajustes → Idioma pantalla o desde la web de la pantalla.
         Inspirado en funciones generales de Morserino-32, con implementación propia Bricohams:

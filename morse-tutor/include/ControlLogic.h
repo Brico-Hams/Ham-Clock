@@ -3,6 +3,19 @@
 #include <stdint.h>
 
 namespace brico {
+class TouchStraightKey {
+ public:
+  bool sample(bool down, bool inside, bool enabled) {
+    if (!down) engaged_ = false;
+    else if (!previousDown_) engaged_ = enabled && inside;
+    else if (!enabled || !inside) engaged_ = false;
+    previousDown_ = down;
+    return engaged_;
+  }
+ private:
+  bool previousDown_ = false, engaged_ = false;
+};
+
 constexpr int controlAt(int x, int y, int width, int height, int barHeight) {
   return x < 0 || x >= width || y < height - barHeight || y >= height
       ? -1 : x * 5 / width;

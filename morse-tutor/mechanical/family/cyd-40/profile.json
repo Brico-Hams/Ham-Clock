@@ -1,0 +1,18 @@
+{
+  "id": "cyd-40",
+  "name": "CYD 4.0 ST7796 target",
+  "pcb": [
+    120,
+    70
+  ],
+  "window": [
+    87,
+    59
+  ],
+  "stack": 12,
+  "firmware": [
+    "esp32-4in-st7796"
+  ],
+  "basis": "Generic 4 inch design envelope; not interchangeable with all ST7796 boards",
+  "source": "https://www.lcdwiki.com/4.0inch_ESP32-32E_Display"
+}

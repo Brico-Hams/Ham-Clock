@@ -1,5 +1,6 @@
 #include "NetworkProtocol.h"
 #include "TonePlayer.h"
+#include "ControlLogic.h"
 #include <assert.h>
 #include <stdio.h>
 #include <string>
@@ -127,6 +128,59 @@ void straightKey() {
   decoder.sample(false, 500, 100);
   assert(decoder.sample(false, 800, 100) == 'E');
 }
+void touchStraightKey() {
+  brico::TouchStraightKey key;
+  assert(key.sample(true, true, true));
+  assert(key.sample(true, true, true));
+  assert(!key.sample(true, false, true)); // Dragging off cancels until release.
+  assert(!key.sample(true, true, true));
+  assert(!key.sample(false, true, true));
+  assert(!key.sample(true, false, true));
+  assert(!key.sample(true, true, true)); // Dragging in must not start a mark.
+  assert(!key.sample(false, false, true));
+  assert(!key.sample(true, true, false)); // Playback or navigation disables input.
+  assert(!key.sample(true, true, true));
+  assert(!key.sample(false, true, true));
+  assert(key.sample(true, true, true));
+  assert(!key.sample(true, true, false));
+  assert(!key.sample(true, true, true));
+  assert(!key.sample(false, true, true));
+  brico::KeyDecoder decoder;
+  decoder.reset(0);
+  std::string decoded;
+  // Hold 100ms for a dot, 300ms for a dash, then seven units of word silence.
+  for (uint32_t now = 0; now <= 2000; now++) {
+    bool down = now < 100 || (now >= 900 && now < 1200);
+    char ch = decoder.sample(key.sample(down, true, true), now, 100);
+    if (ch) decoded += ch;
+  }
+  assert(decoded == "E T ");
+  brico::TouchStraightKey messageKey;
+  decoder.reset(0);
+  std::vector<bool> presses;
+  for (const char* letter = "SOS"; *letter; ++letter) {
+    for (const char* mark = brico::elementsFor(*letter); *mark; ++mark) {
+      presses.insert(presses.end(), *mark == '.' ? 100 : 300, true);
+      presses.insert(presses.end(), 100, false);
+    }
+    presses.insert(presses.end(), 200, false);
+  }
+  presses.insert(presses.end(), 401, false);
+  decoded.clear();
+  for (size_t now = 0; now < presses.size(); ++now) {
+    char ch = decoder.sample(messageKey.sample(presses[now], true, true), uint32_t(now), 100);
+    if (ch) decoded += ch;
+  }
+  assert(decoded == "SOS ");
+  brico::Message message, received;
+  message.sender[0] = 2;
+  strcpy(message.callsign, "NOCALL");
+  assert(brico::normalize(decoded.c_str(), message.text, sizeof(message.text)));
+  uint8_t bytes[brico::kMaxPacket];
+  size_t size = brico::encode(message, bytes, sizeof(bytes));
+  assert(brico::decode(bytes, size, message.sender, received));
+  assert(!strcmp(received.text, "SOS"));
+}
 std::vector<int> squeeze(bool modeB, int release) {
   brico::IambicKeyer keyer;
   std::vector<int> edges;
@@ -188,6 +242,6 @@ void playback() {
 }
 }
 int main() {
-  protocol(); broadcast(); codec(); straightKey(); keyer(); playback();
-  puts("PASS: packet boundaries/corruption, three-node retry deduplication, Morse alphabet, straight/iambic keys, PARIS/Farnsworth timing and rollover");
+  protocol(); broadcast(); codec(); straightKey(); touchStraightKey(); keyer(); playback();
+  puts("PASS: packet boundaries/corruption, three-node retry deduplication, Morse alphabet, touch straight-key holds/cancellation, straight/iambic keys, PARIS/Farnsworth timing and rollover");
 }

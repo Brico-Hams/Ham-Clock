@@ -1,0 +1,16 @@
+{
+  "id": "sunton-32c",
+  "name": "ESP32-2432S032C capacitive",
+  "pcb": [
+    96,
+    60
+  ],
+  "window": [
+    78,
+    55
+  ],
+  "stack": 13,
+  "firmware": [],
+  "basis": "Provisional wider glass access envelope. Sunton definition confirms GT911; glass size/offset must be measured",
+  "source": "https://github.com/rzeldent/platformio-espressif32-sunton/blob/main/esp32-2432S032C.json"
+}

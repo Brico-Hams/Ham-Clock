@@ -1,0 +1,18 @@
+{
+  "id": "freenove-32",
+  "name": "Freenove FNK0114L 3.2",
+  "pcb": [
+    96,
+    60
+  ],
+  "window": [
+    68,
+    51
+  ],
+  "stack": 12,
+  "firmware": [
+    "freenove-32-st7789"
+  ],
+  "basis": "Provisional generous design envelope; actual PCB and glass offsets must be measured",
+  "source": "https://github.com/Freenove/Freenove_ESP32_Display"
+}

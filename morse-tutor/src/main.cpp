@@ -37,6 +37,8 @@ Config config;
 Preferences storage;
 bool storageReady = false, cardReady = false, paused = false, waitingAnswer = false;
 bool playbackVisible = true, playingNetwork = false, redraw = true;
+bool touchKeyDown = false;
+brico::TouchStraightKey touchKey;
 Screen screen = Screen::Home;
 Activity activity = Activity::Letters;
 int menuGroup = 0, menuPage = 0, focus = 0, setting = 0, hits = 0, attempts = 0, fileCount = 0, filePage = 0;
@@ -110,6 +112,17 @@ void footer(const char* first, const char* second, const char* third, const char
   const char* labels[] = {first, second, third, fourth, fifth};
   for (int i = 0; i < 5; ++i) button(i * DISPLAY_W / 5 + 2, kFooter, DISPLAY_W / 5 - 4, 33, labels[i]);
 }
+bool touchKeyScreen() {
+  return screen == Screen::Exercise && !receiveActivity() && config.keyMode == 0;
+}
+void drawTouchKey() {
+  button(3 * DISPLAY_W / 5 + 2, kFooter, 2 * DISPLAY_W / 5 - 4, 33,
+      tr(Text::TouchKey), touchKeyDown);
+}
+void exerciseFooter(const char* first, const char* second, const char* third) {
+  footer(first, second, third, touchKeyScreen() ? "" : "DIT", touchKeyScreen() ? "" : "DAH");
+  if (touchKeyScreen()) drawTouchKey();
+}
 void header(const char* title) {
   button(6, 5, 76, 30, tr(Text::Back));
   center(title, 87, 13, DISPLAY_W - 94, 2, kAccent);
@@ -142,7 +155,7 @@ void render() {
   display.fillScreen(kBackground);
   if (screen == Screen::Home) {
     text("brico", 10, 12); text("hams", 70, 12, 2, kAccent);
-    text("MORSE TUTOR 2.1", DISPLAY_W - 92, 18, 1, kMuted);
+    text("MORSE TUTOR 2.1.1", DISPLAY_W - 104, 18, 1, kMuted);
     display.drawFastHLine(8, 39, DISPLAY_W - 16, kAccent);
     const char* names[] = {tr(Text::Receive), tr(Text::Send), tr(Text::Config)};
     const char* icons[] = {"RX", "TX", "*"};
@@ -177,7 +190,7 @@ void render() {
       text(networkSsid(), 8, 63, 1, kMuted);
       text((String(tr(Text::Password)) + ": BricohamsCW | 192.168.4.1").c_str(), 8, 76, 1, kMuted);
       renderTranscript(94);
-      footer("CW", "TXT", tr(Text::Send), "DIT", "DAH");
+      exerciseFooter("CW", "TXT", tr(Text::Send));
     } else {
       String status = String(config.speed) + "/" + config.overall + " WPM  " + config.pitch + " Hz";
       if (challengeActivity()) status += "  " + String(hits) + "/" + attempts;
@@ -186,7 +199,7 @@ void render() {
         text((String(tr(Text::KochLevel)) + " " + config.lesson).c_str(), 8, 64, 1, kAccent);
       if (waitingAnswer) text(tr(activity == Activity::Flash ? Text::Reveal : Text::AnswerPrompt), 8, 76, 1, kAccent);
       renderTranscript();
-      footer("-", "+", paused ? tr(Text::Next) : "OK", "DIT", "DAH");
+      exerciseFooter("-", "+", paused ? tr(Text::Next) : "OK");
     }
     if (notice.length()) text(notice.substring(0, (DISPLAY_W - 16) / 6).c_str(), 8, kFooter - 14, 1, kAccent);
   } else if (screen == Screen::Setting) {
@@ -448,6 +461,7 @@ void tap(const board::Touch& touch) {
   if (screen != Screen::Home && inside(touch, 6, 5, 76, 30)) { back(); return; }
   if (touch.y >= kFooter) {
     int key = brico::controlAt(touch.x, touch.y, DISPLAY_W, DISPLAY_H, BRICO_CONTROL_HEIGHT);
+    if (screen == Screen::Exercise && key >= 3) return;
     if (screen == Screen::Home && key < 2) focus = (focus + (key == 0 ? 2 : 1)) % 3;
     else if (screen == Screen::Menu && key < 2) {
       int pages = (menuCount() + 3) / 4;
@@ -647,7 +661,16 @@ void loop() {
     }
   }
   int control = brico::controlAt(touch.x, touch.y, DISPLAY_W, DISPLAY_H, BRICO_CONTROL_HEIGHT);
-  audio::paddles(input && touch.down && control == 3, input && touch.down && control == 4);
+  bool straightTouch = touchKey.sample(touch.down,
+      inside(touch, 3 * DISPLAY_W / 5 + 2, kFooter, 2 * DISPLAY_W / 5 - 4, 33),
+      input && touchKeyScreen() && !audio::busy());
+  audio::straightKey(straightTouch);
+  bool virtualPaddles = input && !touchKeyScreen();
+  audio::paddles(virtualPaddles && touch.down && control == 3, virtualPaddles && touch.down && control == 4);
+  if (touchKeyDown != straightTouch) {
+    touchKeyDown = straightTouch;
+    if (touchKeyScreen() && !redraw) drawTouchKey();
+  }
   if (screen == Screen::Exercise) exerciseTick(touch);
   else { audio::Event discarded; while (audio::poll(discarded)) {} }
   if (screen == Screen::Home && millis() - lastStatusAt > 1500) { lastStatusAt = millis(); redraw = true; }

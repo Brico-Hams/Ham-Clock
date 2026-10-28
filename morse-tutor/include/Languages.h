@@ -56,6 +56,7 @@ X(Next,"Sig.","Next","Weiter","Suiv.","Avanti") \
 X(Yes,"Sí","Yes","Ja","Oui","Sì") \
 X(No,"No","No","Nein","Non","No") \
 X(Straight,"Llave recta","Straight key","Handtaste","Pioche","Tasto verticale") \
+X(TouchKey,"Llave CW","CW key","CW-Taste","Clé CW","Tasto CW") \
 X(Pending,"Pendientes","Pending","Wartend","En attente","In attesa") \
 X(NetworkError,"Error de red; ver Serial","Network error; see Serial","Netzfehler; siehe Serial","Erreur réseau; voir Serial","Errore rete; vedi Serial") \
 X(AudioError,"Error de audio; ver Serial","Audio error; see Serial","Audiofehler; siehe Serial","Erreur audio; voir Serial","Errore audio; vedi Serial") \

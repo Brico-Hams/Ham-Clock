@@ -1,0 +1,16 @@
+{
+  "id": "sunton-35r",
+  "name": "ESP32-3248S035R resistive",
+  "pcb": [
+    106,
+    65
+  ],
+  "window": [
+    80,
+    52
+  ],
+  "stack": 12,
+  "firmware": [],
+  "basis": "Provisional envelope for commonly documented Sunton family; no sales ranking or verified fit",
+  "source": "https://github.com/rzeldent/platformio-espressif32-sunton/blob/main/esp32-3248S035R.json"
+}

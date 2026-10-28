@@ -1,0 +1,16 @@
+{
+  "id": "sunton-32n",
+  "name": "ESP32-2432S032N without touch",
+  "pcb": [
+    96,
+    60
+  ],
+  "window": [
+    68,
+    51
+  ],
+  "stack": 10,
+  "firmware": [],
+  "basis": "Provisional envelope. Sunton board definition confirms ST7789 and no touch, not mechanical dimensions",
+  "source": "https://github.com/rzeldent/platformio-espressif32-sunton/blob/main/esp32-2432S032N.json"
+}

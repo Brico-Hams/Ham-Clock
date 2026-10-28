@@ -11,6 +11,26 @@ dual. El reloj mantiene su código y sus perfiles separados.
 
 ## Novedades v2.1: cinco idiomas y entrenamiento ampliado
 
+### v2.1.1: pulsador táctil sin llave externa
+
+En **Ajustes → Manipulador → Llave recta**, las actividades de envío
+(incluida Red CW) muestran un botón ancho **Llave CW** en lugar de DIT/DAH.
+Mantener pulsado genera una marca continua; soltar produce silencio:
+la duración determina punto o raya, no un envío automático de un punto.
+No requiere activar pines externos y funciona también en Freenove/4".
+Salir del botón deslizando cancela la marca; hay que soltar antes de empezar
+otra. Un toque iniciado fuera del botón o durante reproducción no se convierte
+en marca al arrastrar dentro o al acabar el audio. En Red CW, la palabra
+decodificada se difunde tras la pausa o con Enviar. Elegir Iambic A/B conserva
+las palas virtuales DIT/DAH anteriores. El resistivo no permite pulsarlas juntas.
+
+**Documentación ilustrada y descargas:**
+[tutorial y manual detallado](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/docs/manual.html) ·
+[catálogo de cajas](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/docs/cajas.html).
+El manual incluye capturas de la web real con API simulada y vistas TFT
+explícitamente ilustrativas, además de instalación, todos los ajustes,
+ejercicios, red, conexiones, SD, batería y diagnóstico.
+
 Se toman como referencia funciones generales de
 [Morserino-32](https://www.morserino.info/), con código, vocabularios y
 traducciones propios de Bricohams, **no una copia ni un firmware compatible
@@ -130,8 +150,12 @@ garantiza que un clon tenga el mismo cableado.
   Un cambio de pines necesita comprobar el esquema/conector de la placa real.
 
 Para CYD de 2,8", [el adaptador y cableado documentados](hardware/README.md)
-continúan siendo prototipos. [Las cajas y palas](mechanical/README.md) son para
-una PCB nominal de 86×50 mm; **no se certifican para Freenove ni para 4"**.
+continúan siendo prototipos. [Las cajas y palas](mechanical/README.md) incluyen
+la caja nominal original 86×50 mm y una nueva familia de nueve variantes con
+36 bases/tapas de reloj/tutor, incluidas Freenove y 4". Sus envolventes son
+provisionales salvo las cotas de módulo expresamente documentadas:
+**ningún ajuste físico está certificado**. Las nuevas Sunton N/R/C y LCDWIKI
+tienen diseños mecánicos, no perfiles de firmware publicados.
 La batería prevista sigue siendo un power bank USB protegido comercial,
 no una celda de litio desnuda ni un cargador/BMS de diseño propio.
 
@@ -152,7 +176,9 @@ no una celda de litio desnuda ni un cargador/BMS de diseño propio.
    objetivo; tarjetas/copia mental lo ocultan durante la escucha. Responder
    con llave y dejar una pausa de siete unidades para evaluar. `OK` pasa al
    siguiente objetivo; en tarjetas revela la solución antes de continuar.
-5. `DIT`/`DAH` táctiles actúan como palas virtuales. El táctil resistivo es
+5. En modo llave recta, `Llave CW` táctil permite manipular manteniendo y
+   soltando, sin hardware externo. En modos iámbicos, `DIT`/`DAH` actúan como
+   palas virtuales. El táctil resistivo es
    de un punto: para squeeze simultáneo se necesitan dos palas físicas.
    En CONFIG elegir llave recta, iámbico A o B para los contactos externos.
    Llave recta usa DIT a masa; palas usan DIT y DAH a masa, contactos secos.

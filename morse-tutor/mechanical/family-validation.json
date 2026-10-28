@@ -1,0 +1,758 @@
+[
+  {
+    "name": "cyd-28\\clock-base.stl",
+    "triangles": 1788,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        116
+      ],
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        48
+      ]
+    ],
+    "volumeMm3": 76140
+  },
+  {
+    "name": "cyd-28\\clock-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        116
+      ],
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 15668
+  },
+  {
+    "name": "cyd-28\\tutor-base.stl",
+    "triangles": 4652,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        0,
+        136
+      ],
+      [
+        0,
+        60
+      ]
+    ],
+    "volumeMm3": 158614
+  },
+  {
+    "name": "cyd-28\\tutor-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        56,
+        136
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 27065
+  },
+  {
+    "name": "freenove-32\\clock-base.stl",
+    "triangles": 1788,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        124
+      ],
+      [
+        0,
+        84
+      ],
+      [
+        0,
+        48
+      ]
+    ],
+    "volumeMm3": 82080
+  },
+  {
+    "name": "freenove-32\\clock-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        124
+      ],
+      [
+        0,
+        84
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 17349
+  },
+  {
+    "name": "freenove-32\\tutor-base.stl",
+    "triangles": 4652,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        0,
+        140
+      ],
+      [
+        0,
+        60
+      ]
+    ],
+    "volumeMm3": 161496
+  },
+  {
+    "name": "freenove-32\\tutor-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        56,
+        140
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 27654
+  },
+  {
+    "name": "cyd-40\\clock-base.stl",
+    "triangles": 1788,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        148
+      ],
+      [
+        0,
+        94
+      ],
+      [
+        0,
+        48
+      ]
+    ],
+    "volumeMm3": 99912
+  },
+  {
+    "name": "cyd-40\\clock-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        148
+      ],
+      [
+        0,
+        94
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 21897
+  },
+  {
+    "name": "cyd-40\\tutor-base.stl",
+    "triangles": 4652,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        0,
+        150
+      ],
+      [
+        0,
+        60
+      ]
+    ],
+    "volumeMm3": 168732
+  },
+  {
+    "name": "cyd-40\\tutor-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        56,
+        150
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 27879
+  },
+  {
+    "name": "sunton-32n\\clock-base.stl",
+    "triangles": 1788,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        124
+      ],
+      [
+        0,
+        84
+      ],
+      [
+        0,
+        48
+      ]
+    ],
+    "volumeMm3": 82080
+  },
+  {
+    "name": "sunton-32n\\clock-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        124
+      ],
+      [
+        0,
+        84
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 17349
+  },
+  {
+    "name": "sunton-32n\\tutor-base.stl",
+    "triangles": 4652,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        0,
+        140
+      ],
+      [
+        0,
+        60
+      ]
+    ],
+    "volumeMm3": 161496
+  },
+  {
+    "name": "sunton-32n\\tutor-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        56,
+        140
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 27654
+  },
+  {
+    "name": "sunton-32r\\clock-base.stl",
+    "triangles": 1788,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        124
+      ],
+      [
+        0,
+        84
+      ],
+      [
+        0,
+        48
+      ]
+    ],
+    "volumeMm3": 82080
+  },
+  {
+    "name": "sunton-32r\\clock-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        124
+      ],
+      [
+        0,
+        84
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 17349
+  },
+  {
+    "name": "sunton-32r\\tutor-base.stl",
+    "triangles": 4652,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        0,
+        140
+      ],
+      [
+        0,
+        60
+      ]
+    ],
+    "volumeMm3": 161496
+  },
+  {
+    "name": "sunton-32r\\tutor-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        56,
+        140
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 27654
+  },
+  {
+    "name": "sunton-32c\\clock-base.stl",
+    "triangles": 1788,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        124
+      ],
+      [
+        0,
+        84
+      ],
+      [
+        0,
+        49
+      ]
+    ],
+    "volumeMm3": 83215
+  },
+  {
+    "name": "sunton-32c\\clock-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        124
+      ],
+      [
+        0,
+        84
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 15376
+  },
+  {
+    "name": "sunton-32c\\tutor-base.stl",
+    "triangles": 4652,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        0,
+        140
+      ],
+      [
+        0,
+        60
+      ]
+    ],
+    "volumeMm3": 161496
+  },
+  {
+    "name": "sunton-32c\\tutor-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        56,
+        140
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 25681
+  },
+  {
+    "name": "sunton-35r\\clock-base.stl",
+    "triangles": 1788,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        134
+      ],
+      [
+        0,
+        89
+      ],
+      [
+        0,
+        48
+      ]
+    ],
+    "volumeMm3": 89850
+  },
+  {
+    "name": "sunton-35r\\clock-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        134
+      ],
+      [
+        0,
+        89
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 19380
+  },
+  {
+    "name": "sunton-35r\\tutor-base.stl",
+    "triangles": 4652,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        0,
+        145
+      ],
+      [
+        0,
+        60
+      ]
+    ],
+    "volumeMm3": 165174
+  },
+  {
+    "name": "sunton-35r\\tutor-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        56,
+        145
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 28104
+  },
+  {
+    "name": "lcdwiki-35\\clock-base.stl",
+    "triangles": 1788,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        129.5
+      ],
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        48
+      ]
+    ],
+    "volumeMm3": 82236
+  },
+  {
+    "name": "lcdwiki-35\\clock-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        129.5
+      ],
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 15751
+  },
+  {
+    "name": "lcdwiki-35\\tutor-base.stl",
+    "triangles": 4652,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        0,
+        136
+      ],
+      [
+        0,
+        60
+      ]
+    ],
+    "volumeMm3": 158149
+  },
+  {
+    "name": "lcdwiki-35\\tutor-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        56,
+        136
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 24495
+  },
+  {
+    "name": "lcdwiki-40\\clock-base.stl",
+    "triangles": 1788,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        139.11
+      ],
+      [
+        0,
+        84.88
+      ],
+      [
+        0,
+        48
+      ]
+    ],
+    "volumeMm3": 89708
+  },
+  {
+    "name": "lcdwiki-40\\clock-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        139.11
+      ],
+      [
+        0,
+        84.88
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 16759
+  },
+  {
+    "name": "lcdwiki-40\\tutor-base.stl",
+    "triangles": 4652,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        0,
+        140.88
+      ],
+      [
+        0,
+        60
+      ]
+    ],
+    "volumeMm3": 161743
+  },
+  {
+    "name": "lcdwiki-40\\tutor-lid.stl",
+    "triangles": 3552,
+    "components": 1,
+    "nonManifoldEdges": 0,
+    "boundsMm": [
+      [
+        0,
+        174
+      ],
+      [
+        56,
+        140.88
+      ],
+      [
+        0,
+        3.9
+      ]
+    ],
+    "volumeMm3": 24024
+  }
+]

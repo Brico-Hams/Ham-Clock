@@ -1,0 +1,19 @@
+{
+  "id": "cyd-28",
+  "name": "CYD 2.8 ILI9341 / ST7789",
+  "pcb": [
+    86,
+    50
+  ],
+  "window": [
+    70,
+    43
+  ],
+  "stack": 9,
+  "firmware": [
+    "esp32-2432s028r",
+    "esp32-2432s028r-st7789"
+  ],
+  "basis": "Legacy Bricohams design envelope; not manufacturer-certified dimensions",
+  "source": "https://github.com/rzeldent/platformio-espressif32-sunton"
+}

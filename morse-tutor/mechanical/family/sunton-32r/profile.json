@@ -1,0 +1,16 @@
+{
+  "id": "sunton-32r",
+  "name": "ESP32-2432S032R resistive",
+  "pcb": [
+    96,
+    60
+  ],
+  "window": [
+    68,
+    51
+  ],
+  "stack": 12,
+  "firmware": [],
+  "basis": "Provisional envelope. Sunton board definition confirms ST7789/XPT2046, not mechanical dimensions",
+  "source": "https://github.com/rzeldent/platformio-espressif32-sunton/blob/main/esp32-2432S032R.json"
+}

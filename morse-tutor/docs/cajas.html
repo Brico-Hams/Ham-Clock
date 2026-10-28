@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bricohams · Cajas para nueve variantes de pantalla</title>
+<style>body{font:17px/1.6 system-ui;max-width:1100px;margin:auto;padding:24px;color:#eef4ff;background:#101725}
+h1,h2{color:#ffb15c}a{color:#93e5ff}.notice,article{background:#213047;padding:20px;border-radius:12px;margin:20px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px}img{width:100%;height:auto;background:#eee;border-radius:8px}
+dt{font-weight:bold}dd{margin:0 0 10px;overflow-wrap:anywhere}code{overflow-wrap:anywhere}</style></head>
+<body><h1>Cajas Bricohams: mismo estilo, nueve variantes</h1>
+<p><a href="manual.html#caja">Montaje detallado</a> · <a href="../index.html">Instalador</a> ·
+<a href="../downloads/bricohams-display-family.zip" download>Descargar toda la familia</a></p>
+<div class="notice"><strong>36 piezas principales:</strong> nueve variantes × reloj/tutor × base/tapa.
+Cada ZIP individual añade las dos palas, abrazadera y cupón de ajuste comunes, el SCAD y los parámetros.
+Las tapas tienen wordmark BRICOHAMS grabado. El power bank previsto es USB protegido, cerrado, de hasta 100 × 60 × 22 mm.
+<p>Las cotas indicadas son <strong>envolventes de diseño</strong>; las inferidas no se presentan como planos del fabricante.
+No se ha probado ajuste ni impresión física. Los apoyos, altura, ventana centrada y pasos de cable deben comprobarse en la revisión real.
+Las fuentes acreditan familias/controladores y, donde se indica, dimensiones de módulo; no un ranking de ventas.</p>
+<p>Una caja <strong>no</strong> añade soporte de firmware ni habilita palas externas.
+N/R/C no son equivalentes: N necesita navegación sin táctil; R usa XPT2046; C de esta familia usa GT911.
+El firmware publicado sigue teniendo cuatro perfiles, no nueve.</p>
+<p><a href="../downloads/family-validation.json">Informe de mallas</a> ·
+<a href="../downloads/display-profiles.json">Parámetros y procedencia</a> ·
+<a href="../downloads/bricohams.scad">Fuente OpenSCAD común</a></p></div>
+<h2>Vistas CAD de referencia</h2>
+<p>Renderizados reales del modelo OpenSCAD CYD 2,8″. No son fotografías ni demuestran ajuste físico.
+La base lleva soportes internos que requieren soporte de impresión.</p>
+<div class="grid"><figure><img src="assets/cad-clock.png" alt="Render CAD de la base reloj con batería"><figcaption>Base reloj.</figcaption></figure>
+<figure><img src="assets/cad-tutor.png" alt="Render CAD de base tutor con plataforma de palas"><figcaption>Base tutor; las palas se imprimen por separado.</figcaption></figure></div>
+<div class="grid"><article id="cyd-28"><h2>CYD 2.8 ILI9341 / ST7789</h2>
+<img src="assets/case-cyd-28.svg" alt="Plano esquemático de caja CYD 2.8 ILI9341 / ST7789">
+<p><strong>Prototipo no verificado físicamente.</strong> Esquema de planta, no render del STL.</p>
+<dl><dt>Envolvente PCB de diseño</dt><dd>86 × 50 mm</dd><dt>Ventana centrada</dt><dd>70 × 43 mm</dd>
+<dt>Altura reservada del conjunto</dt><dd>9 mm (medir componentes)</dd>
+<dt>Reloj, base exterior</dt><dd>116.00 × 80.00 × 48 mm</dd>
+<dt>Tutor, base exterior</dt><dd>174.00 × 136.00 × 60 mm</dd>
+<dt>Perfil de firmware publicado</dt><dd>esp32-2432s028r, esp32-2432s028r-st7789</dd></dl>
+<p>Legacy Bricohams design envelope; not manufacturer-certified dimensions</p><p><a href="https://github.com/rzeldent/platformio-espressif32-sunton">Fuente de referencia</a> ·
+<a href="../downloads/cyd-28.zip" download>Descargar conjunto STL + fuente</a></p></article>
+<article id="freenove-32"><h2>Freenove FNK0114L 3.2</h2>
+<img src="assets/case-freenove-32.svg" alt="Plano esquemático de caja Freenove FNK0114L 3.2">
+<p><strong>Prototipo no verificado físicamente.</strong> Esquema de planta, no render del STL.</p>
+<dl><dt>Envolvente PCB de diseño</dt><dd>96 × 60 mm</dd><dt>Ventana centrada</dt><dd>68 × 51 mm</dd>
+<dt>Altura reservada del conjunto</dt><dd>12 mm (medir componentes)</dd>
+<dt>Reloj, base exterior</dt><dd>124.00 × 84.00 × 48 mm</dd>
+<dt>Tutor, base exterior</dt><dd>174.00 × 140.00 × 60 mm</dd>
+<dt>Perfil de firmware publicado</dt><dd>freenove-32-st7789</dd></dl>
+<p>Provisional generous design envelope; actual PCB and glass offsets must be measured</p><p><a href="https://github.com/Freenove/Freenove_ESP32_Display">Fuente de referencia</a> ·
+<a href="../downloads/freenove-32.zip" download>Descargar conjunto STL + fuente</a></p></article>
+<article id="cyd-40"><h2>CYD 4.0 ST7796 target</h2>
+<img src="assets/case-cyd-40.svg" alt="Plano esquemático de caja CYD 4.0 ST7796 target">
+<p><strong>Prototipo no verificado físicamente.</strong> Esquema de planta, no render del STL.</p>
+<dl><dt>Envolvente PCB de diseño</dt><dd>120 × 70 mm</dd><dt>Ventana centrada</dt><dd>87 × 59 mm</dd>
+<dt>Altura reservada del conjunto</dt><dd>12 mm (medir componentes)</dd>
+<dt>Reloj, base exterior</dt><dd>148.00 × 94.00 × 48 mm</dd>
+<dt>Tutor, base exterior</dt><dd>174.00 × 150.00 × 60 mm</dd>
+<dt>Perfil de firmware publicado</dt><dd>esp32-4in-st7796</dd></dl>
+<p>Generic 4 inch design envelope; not interchangeable with all ST7796 boards</p><p><a href="https://www.lcdwiki.com/4.0inch_ESP32-32E_Display">Fuente de referencia</a> ·
+<a href="../downloads/cyd-40.zip" download>Descargar conjunto STL + fuente</a></p></article>
+<article id="sunton-32n"><h2>ESP32-2432S032N without touch</h2>
+<img src="assets/case-sunton-32n.svg" alt="Plano esquemático de caja ESP32-2432S032N without touch">
+<p><strong>Prototipo no verificado físicamente.</strong> Esquema de planta, no render del STL.</p>
+<dl><dt>Envolvente PCB de diseño</dt><dd>96 × 60 mm</dd><dt>Ventana centrada</dt><dd>68 × 51 mm</dd>
+<dt>Altura reservada del conjunto</dt><dd>10 mm (medir componentes)</dd>
+<dt>Reloj, base exterior</dt><dd>124.00 × 84.00 × 48 mm</dd>
+<dt>Tutor, base exterior</dt><dd>174.00 × 140.00 × 60 mm</dd>
+<dt>Perfil de firmware publicado</dt><dd><strong>Ninguno. Caja mecánica solamente.</strong></dd></dl>
+<p>Provisional envelope. Sunton board definition confirms ST7789 and no touch, not mechanical dimensions</p><p><a href="https://github.com/rzeldent/platformio-espressif32-sunton/blob/main/esp32-2432S032N.json">Fuente de referencia</a> ·
+<a href="../downloads/sunton-32n.zip" download>Descargar conjunto STL + fuente</a></p></article>
+<article id="sunton-32r"><h2>ESP32-2432S032R resistive</h2>
+<img src="assets/case-sunton-32r.svg" alt="Plano esquemático de caja ESP32-2432S032R resistive">
+<p><strong>Prototipo no verificado físicamente.</strong> Esquema de planta, no render del STL.</p>
+<dl><dt>Envolvente PCB de diseño</dt><dd>96 × 60 mm</dd><dt>Ventana centrada</dt><dd>68 × 51 mm</dd>
+<dt>Altura reservada del conjunto</dt><dd>12 mm (medir componentes)</dd>
+<dt>Reloj, base exterior</dt><dd>124.00 × 84.00 × 48 mm</dd>
+<dt>Tutor, base exterior</dt><dd>174.00 × 140.00 × 60 mm</dd>
+<dt>Perfil de firmware publicado</dt><dd><strong>Ninguno. Caja mecánica solamente.</strong></dd></dl>
+<p>Provisional envelope. Sunton board definition confirms ST7789/XPT2046, not mechanical dimensions</p><p><a href="https://github.com/rzeldent/platformio-espressif32-sunton/blob/main/esp32-2432S032R.json">Fuente de referencia</a> ·
+<a href="../downloads/sunton-32r.zip" download>Descargar conjunto STL + fuente</a></p></article>
+<article id="sunton-32c"><h2>ESP32-2432S032C capacitive</h2>
+<img src="assets/case-sunton-32c.svg" alt="Plano esquemático de caja ESP32-2432S032C capacitive">
+<p><strong>Prototipo no verificado físicamente.</strong> Esquema de planta, no render del STL.</p>
+<dl><dt>Envolvente PCB de diseño</dt><dd>96 × 60 mm</dd><dt>Ventana centrada</dt><dd>78 × 55 mm</dd>
+<dt>Altura reservada del conjunto</dt><dd>13 mm (medir componentes)</dd>
+<dt>Reloj, base exterior</dt><dd>124.00 × 84.00 × 49 mm</dd>
+<dt>Tutor, base exterior</dt><dd>174.00 × 140.00 × 60 mm</dd>
+<dt>Perfil de firmware publicado</dt><dd><strong>Ninguno. Caja mecánica solamente.</strong></dd></dl>
+<p>Provisional wider glass access envelope. Sunton definition confirms GT911; glass size/offset must be measured</p><p><a href="https://github.com/rzeldent/platformio-espressif32-sunton/blob/main/esp32-2432S032C.json">Fuente de referencia</a> ·
+<a href="../downloads/sunton-32c.zip" download>Descargar conjunto STL + fuente</a></p></article>
+<article id="sunton-35r"><h2>ESP32-3248S035R resistive</h2>
+<img src="assets/case-sunton-35r.svg" alt="Plano esquemático de caja ESP32-3248S035R resistive">
+<p><strong>Prototipo no verificado físicamente.</strong> Esquema de planta, no render del STL.</p>
+<dl><dt>Envolvente PCB de diseño</dt><dd>106 × 65 mm</dd><dt>Ventana centrada</dt><dd>80 × 52 mm</dd>
+<dt>Altura reservada del conjunto</dt><dd>12 mm (medir componentes)</dd>
+<dt>Reloj, base exterior</dt><dd>134.00 × 89.00 × 48 mm</dd>
+<dt>Tutor, base exterior</dt><dd>174.00 × 145.00 × 60 mm</dd>
+<dt>Perfil de firmware publicado</dt><dd><strong>Ninguno. Caja mecánica solamente.</strong></dd></dl>
+<p>Provisional envelope for commonly documented Sunton family; no sales ranking or verified fit</p><p><a href="https://github.com/rzeldent/platformio-espressif32-sunton/blob/main/esp32-3248S035R.json">Fuente de referencia</a> ·
+<a href="../downloads/sunton-35r.zip" download>Descargar conjunto STL + fuente</a></p></article>
+<article id="lcdwiki-35"><h2>LCDWIKI E32R35T / E32N35T 3.5</h2>
+<img src="assets/case-lcdwiki-35.svg" alt="Plano esquemático de caja LCDWIKI E32R35T / E32N35T 3.5">
+<p><strong>Prototipo no verificado físicamente.</strong> Esquema de planta, no render del STL.</p>
+<dl><dt>Envolvente PCB de diseño</dt><dd>101.5 × 55.5 mm</dd><dt>Ventana centrada</dt><dd>79.24 × 51.5 mm</dd>
+<dt>Altura reservada del conjunto</dt><dd>12 mm (medir componentes)</dd>
+<dt>Reloj, base exterior</dt><dd>129.50 × 80.00 × 48 mm</dd>
+<dt>Tutor, base exterior</dt><dd>174.00 × 136.00 × 60 mm</dd>
+<dt>Perfil de firmware publicado</dt><dd><strong>Ninguno. Caja mecánica solamente.</strong></dd></dl>
+<p>Manufacturer module outline 101.50 x 55.50; window = touch visual area plus 2mm; centered window/stack/ledge clearance still provisional</p><p><a href="https://www.lcdwiki.com/3.5inch_ESP32-32E_Display">Fuente de referencia</a> ·
+<a href="../downloads/lcdwiki-35.zip" download>Descargar conjunto STL + fuente</a></p></article>
+<article id="lcdwiki-40"><h2>LCDWIKI E32R40T / E32N40T 4.0</h2>
+<img src="assets/case-lcdwiki-40.svg" alt="Plano esquemático de caja LCDWIKI E32R40T / E32N40T 4.0">
+<p><strong>Prototipo no verificado físicamente.</strong> Esquema de planta, no render del STL.</p>
+<dl><dt>Envolvente PCB de diseño</dt><dd>111.11 × 60.88 mm</dd><dt>Ventana centrada</dt><dd>87.22 × 58.88 mm</dd>
+<dt>Altura reservada del conjunto</dt><dd>12 mm (medir componentes)</dd>
+<dt>Reloj, base exterior</dt><dd>139.11 × 84.88 × 48 mm</dd>
+<dt>Tutor, base exterior</dt><dd>174.00 × 140.88 × 60 mm</dd>
+<dt>Perfil de firmware publicado</dt><dd><strong>Ninguno. Caja mecánica solamente.</strong></dd></dl>
+<p>Manufacturer module outline 111.11 x 60.88; window = visual area plus 2mm; centered window/stack/ledge clearance still provisional</p><p><a href="https://www.lcdwiki.com/4.0inch_ESP32-32E_Display">Fuente de referencia</a> ·
+<a href="../downloads/lcdwiki-40.zip" download>Descargar conjunto STL + fuente</a></p></article></div>
+<p><a href="manual.html">Volver al manual de configuración</a></p></body></html>

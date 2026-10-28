@@ -4,9 +4,14 @@ import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
-const folder = join(root, 'mechanical', 'stl');
+const family = process.argv.includes('--family');
+const folder = join(root, 'mechanical', family ? 'family' : 'stl');
+const profiles = JSON.parse(readFileSync(join(root, 'mechanical', 'display-profiles.json'), 'utf8')).profiles;
+const names = family ? profiles.flatMap(p => ['clock', 'tutor'].flatMap(product =>
+  ['base', 'lid'].map(part => join(p.id, `${product}-${part}.stl`)))) :
+  readdirSync(folder).filter(n => n.endsWith('.stl'));
 const results = [];
-for (const name of readdirSync(folder).filter(n => n.endsWith('.stl'))) {
+for (const name of names) {
   const source = readFileSync(join(folder, name), 'utf8');
   const vertices = [...source.matchAll(/vertex\s+([-\d.e+]+)\s+([-\d.e+]+)\s+([-\d.e+]+)/gi)]
     .map(m => m.slice(1).map(Number));
@@ -48,9 +53,19 @@ for (const name of readdirSync(folder).filter(n => n.endsWith('.stl'))) {
     Math.min(...vertices.map(v => v[axis])), Math.max(...vertices.map(v => v[axis])),
   ]);
   assert(volume > 0, `${name}: positive enclosed volume`);
+  if (family) {
+    const profile = profiles.find(p => name.startsWith(p.id + '/') || name.startsWith(p.id + '\\'));
+    const tutor = name.includes('tutor-'), base = name.endsWith('base.stl');
+    const width = Math.max(tutor ? 174 : 116, profile.pcb[0] + 28, 116);
+    const height = Math.max(profile.pcb[1] + 24, 80) + (tutor && base ? 56 : 0);
+    const depth = base ? Math.max(tutor ? 60 : 48, profile.stack + 36) : 3.9;
+    for (const [axis, expected] of [width, height, depth].entries())
+      assert(Math.abs(bounds[axis][1] - bounds[axis][0] - expected) < 0.02,
+        `${name}: unexpected envelope on axis ${axis}`);
+  }
   results.push({ name, triangles: vertices.length / 3, components, nonManifoldEdges: badEdges,
     boundsMm: bounds, volumeMm3: Math.round(volume) });
 }
-assert.equal(results.length, 8, 'Expected eight printable parts');
-writeFileSync(join(root, 'mechanical', 'mesh-validation.json'), JSON.stringify(results, null, 2) + '\n');
+assert.equal(results.length, family ? profiles.length * 4 : 8, 'Expected complete printable parts');
+writeFileSync(join(root, 'mechanical', family ? 'family-validation.json' : 'mesh-validation.json'), JSON.stringify(results, null, 2) + '\n');
 console.log(JSON.stringify(results, null, 2));

@@ -23,6 +23,7 @@ QueueHandle_t commands = nullptr, events = nullptr;
 std::atomic<uint32_t> generation{0};
 std::atomic<bool> playing{false}, virtualDit{false}, virtualDah{false};
 std::atomic<bool> keyActive{false};
+std::atomic<bool> virtualStraight{false};
 bool ready = false;
 void worker(void*) {
   brico::TonePlayer player;
@@ -68,7 +69,7 @@ void worker(void*) {
       bool dit = virtualDit.load(), dah = virtualDah.load();
       bool keyed = false;
       if (config.enabled) {
-        bool straight = config.keyMode == 0 && board::dit();
+        bool straight = config.keyMode == 0 && (board::dit() || virtualStraight.load());
         if (config.keyMode != 0) { dit |= board::dit(); dah |= board::dah(); }
         keyed = keyer.sample(dit, dah, config.keyMode == 2, now, 1200 / config.speed) || straight;
         if (keyed) lastKeyedAt = now;
@@ -124,6 +125,7 @@ bool play(const char* text, int speed, int overall, unsigned wordGap) {
 void stop() {
   playing.store(false); generation.fetch_add(1);
   virtualDit.store(false); virtualDah.store(false);
+  virtualStraight.store(false);
 }
 bool busy() { return playing.load(); }
 bool inputBusy() { return keyActive.load(); }
@@ -134,4 +136,5 @@ bool poll(Event& event) {
   return false;
 }
 void paddles(bool dit, bool dah) { virtualDit.store(dit); virtualDah.store(dah); }
+void straightKey(bool down) { virtualStraight.store(down); }
 }

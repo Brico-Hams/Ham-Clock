@@ -67,12 +67,14 @@ jobs:
           /tmp/bricohams-settings-tests
           node tools/generate-adapter.mjs
           node tools/validate-models.mjs
+          node tools/validate-models.mjs --family
           node tools/package-firmware.mjs
 
       - name: Stage Morse Tutor installer
         run: |
           node morse-tutor/tools/stage-installer.mjs
           node morse-tutor/tools/validate-release.mjs
+          node morse-tutor/tools/validate-documentation.mjs
 
       - uses: actions/upload-pages-artifact@v3
         with:

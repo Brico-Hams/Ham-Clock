@@ -2,6 +2,7 @@
 product = "clock"; // "clock" or "tutor"
 part = "base"; // base, lid, paddle_left, paddle_right, clamp, fit_coupon
 $fn = 40;
+family = false; // Export tool supplies measured/design envelopes for each variant.
 wall = 2.4;
 floor_thickness = 3;
 clearance = 0.6;
@@ -14,12 +15,12 @@ bank_w = 100;
 bank_h = 60;
 bank_t = 22;
 is_tutor = product == "tutor";
-case_w = is_tutor ? 174 : 116;
-case_h = is_tutor ? 132 : 90;
-case_z = is_tutor ? 60 : 48;
+case_w = family ? max(is_tutor ? 174 : 116, pcb_w+28, bank_w+16) : (is_tutor ? 174 : 116);
+case_h = family ? max(pcb_h+24,bank_h+20)+(is_tutor ? 56 : 0) : (is_tutor ? 132 : 90);
+case_z = family ? max(is_tutor ? 60 : 48,screen_stack+bank_t+14) : (is_tutor ? 60 : 48);
 rear_start = is_tutor ? 56 : 0;
 board_x = case_w / 2;
-board_y = is_tutor ? 94 : case_h / 2;
+board_y = rear_start+(case_h-rear_start)/2;
 board_z = case_z - screen_stack - 1;
 lid_t = 2.4;
 lip = 1.5;
@@ -30,6 +31,7 @@ assert(bank_w + 2 * clearance < case_w - 2 * wall);
 assert(bank_h + 2 * clearance < case_h - rear_start - 2 * wall);
 assert(bank_t + floor_thickness + 5 < board_z);
 assert(screen_w < pcb_w && screen_h < pcb_h);
+assert(screen_w+2*wall < case_w && screen_h+2*wall < case_h-rear_start);
 
 module round_box(w, h, z, r=4) {
     hull() for (x=[r,w-r], y=[r,h-r])

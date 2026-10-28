@@ -11,4 +11,5 @@ bool busy();
 bool inputBusy();
 bool poll(Event& event);
 void paddles(bool dit, bool dah);
+void straightKey(bool down);
 }

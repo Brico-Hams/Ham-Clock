@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bricohams Morse Tutor · Tutorial y manual de configuración</title>
+<style>
+:root{font:17px/1.6 system-ui,sans-serif;color:#eef4ff;background:#101725;color-scheme:dark}
+body{max-width:1080px;margin:auto;padding:24px}h1,h2,h3{color:#ffb15c;line-height:1.25}h2{margin-top:2.5em;border-bottom:1px solid #687386;padding-bottom:12px}
+a{color:#93e5ff}nav,.notice,details{background:#213047;padding:18px;border-radius:10px;margin:18px 0}
+.notice{border-left:5px solid #ff9933}table{border-collapse:collapse;width:100%;margin:18px 0;font-size:.94rem}
+th,td{border:1px solid #687386;padding:9px;text-align:left;vertical-align:top}th{background:#213047}
+figure{margin:20px 0;padding:16px;background:#1a2537;border-radius:10px;break-inside:avoid}
+figure img{max-width:100%;height:auto;display:block;margin:auto}figure.tft img{width:480px;image-rendering:auto}
+figcaption{font-size:.88rem;margin-top:12px;color:#cbd9ef}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px}
+code{overflow-wrap:anywhere;background:#213047;padding:2px 5px}pre{white-space:pre-wrap;background:#213047;padding:16px}
+.scroll{overflow-x:auto}button{padding:10px;background:#ffb15c;border:0;border-radius:6px;color:#101725;font:inherit;cursor:pointer}
+@media print{ :root{font:11pt/1.4 sans-serif;color:#111;background:white;color-scheme:light}body{max-width:none;padding:0}
+nav,button,.noprint{display:none}h1,h2,h3,a{color:#111}figure,.notice,th,details,pre,code{background:#f0f0f0;color:#111}
+figcaption{color:#333}h2{break-before:page}figure img{max-height:21cm;object-fit:contain}a{overflow-wrap:anywhere}table{font-size:9pt} }
+</style>
+</head>
+<body>
+<header>
+<p>BRICOHAMS · MORSE TUTOR · v2.1.1 · Edición 28/10/2026</p>
+<h1>Tutorial ilustrado y manual detallado de configuración</h1>
+<p>Instalar, aprender Morse, comunicar varias pantallas y montar una caja con batería.</p>
+<p><a href="../index.html">Instalador del tutor</a> · <a href="../../index.html">Instalador del reloj</a> ·
+<a href="cajas.html">Catálogo de cajas y descargas STL</a> ·
+<a href="https://github.com/anatolbricoham/Ham-Clock/tree/main/morse-tutor">Código y documentación técnica</a></p>
+<button type="button" onclick="print()">Imprimir / guardar como PDF</button>
+<p class="notice"><strong>Qué muestran las imágenes.</strong> Las capturas PNG son de la interfaz web real incluida en el firmware,
+servida por la herramienta de prueba con <strong>datos de dispositivo simulados</strong>.
+Las vistas TFT en SVG son <strong>ilustraciones de la distribución y los menús</strong>, no fotografías,
+capturas de framebuffer ni pruebas físicas. Se han reconstruido a partir del código y del catálogo de textos.
+El aspecto de la fuente, colores y márgenes puede variar en la placa. Los mensajes y estadísticas son ejemplos.
+No se ha comprobado el montaje, la autonomía ni el enlace entre placas reales.</p>
+</header>
+<nav aria-label="Contenido">
+<strong>Contenido</strong>
+<ol>
+<li><a href="#elegir">Elegir placa y diferenciar N/R/C</a></li>
+<li><a href="#instalar">Instalación y primera puesta en marcha</a></li>
+<li><a href="#navegar">Navegación por todas las páginas</a></li>
+<li><a href="#ajustes">Tabla completa de ajustes</a></li>
+<li><a href="#idiomas">Idiomas, vocabulario y acentos</a></li>
+<li><a href="#aprender">Sesión guiada: Koch, eco y adaptativo</a></li>
+<li><a href="#memorias">Memorias y estadísticas</a></li>
+<li><a href="#red">Dos o más tutores: Red CW y móvil</a></li>
+<li><a href="#llaves">Llave, palas y audio</a></li>
+<li><a href="#sd">Archivos de tarjeta SD</a></li>
+<li><a href="#caja">Caja, batería e impresión</a></li>
+<li><a href="#problemas">Solución de problemas</a></li>
+<li><a href="#mantenimiento">Persistencia, mantenimiento y límites</a></li>
+<li><a href="#galeria">Galería en cinco idiomas y fuentes</a></li>
+</ol>
+</nav>
+<section id="elegir">
+<h2>1. Elegir placa: no basta con las pulgadas</h2>
+<p>Lee la referencia serigrafiada del PCB, su revisión, controlador LCD y controlador táctil.
+Una placa Sunton de 3,2″ no se convierte en Freenove por tener la misma resolución.
+Una caja imprimible tampoco incorpora soporte al firmware.</p>
+<div class="scroll"><table>
+<thead><tr><th>Referencia/perfil del instalador actual</th><th>Imagen horizontal</th><th>Entrada</th><th>Estado</th></tr></thead>
+<tbody>
+<tr><td>CYD 2,8″ ILI9341 · <code>esp32-2432s028r</code></td><td>320 × 240</td><td>XPT2046 resistivo; DIT22/DAH27</td><td>Compilado; sin prueba física en esta sesión</td></tr>
+<tr><td>CYD 2,8″ ST7789 · <code>esp32-2432s028r-st7789</code></td><td>320 × 240</td><td>XPT2046 resistivo; DIT22/DAH27</td><td>Experimental; confirmar revisión</td></tr>
+<tr><td>Freenove FNK0114L 3,2″ · <code>freenove-32-st7789</code></td><td>320 × 240</td><td>XPT2046; contactos externos deshabilitados</td><td>Configuración basada en documentación oficial</td></tr>
+<tr><td>CYD 4″ ST7796 · <code>esp32-4in-st7796</code></td><td>480 × 320</td><td>XPT2046; contactos externos deshabilitados</td><td>Confirmar cableado y revisión exactos</td></tr>
+</tbody></table></div>
+<h3>ESP32-2432S032N / R / C: comparación correcta</h3>
+<div class="scroll"><table>
+<thead><tr><th>Característica</th><th>N · Sin táctil</th><th>R · Resistivo</th><th>C · Capacitivo</th></tr></thead>
+<tbody>
+<tr><td>Interacción</td><td>No detecta toques</td><td>Presión; dedo, uña o stylus romo</td><td>Contacto capacitivo; normalmente dedo</td></tr>
+<tr><td>Controlador documentado de esta familia Sunton</td><td>Ninguno</td><td>XPT2046 por SPI</td><td>GT911 por I²C; no FT6206 por suposición</td></tr>
+<tr><td>Puntos y gestos</td><td>0</td><td>1; no permite squeeze táctil</td><td>La capacidad del chip no implica gestos o multitáctil implementados en la aplicación</td></tr>
+<tr><td>Precisión</td><td>No aplica</td><td>Depende de calibración y panel; útil con puntero fino</td><td>Depende del sensor, vidrio y controlador</td></tr>
+<tr><td>Imagen</td><td>Sin capa táctil adicional</td><td>Las capas pueden reducir transmisión y contraste</td><td>Suele ser más transparente; no garantiza mayor brillo que otro panel</td></tr>
+<tr><td>Caja entregada</td><td>Base/tapa específicas de envolvente provisional</td><td>Base/tapa con acceso al área táctil</td><td>Ventana de acceso más amplia, pendiente de medir el vidrio real</td></tr>
+<tr><td>Firmware Bricohams 2.1</td><td colspan="3"><strong>No hay perfil publicado para estas tres referencias.</strong> No flashear el perfil Freenove por semejanza. Se entregan diseños mecánicos y estudio de compatibilidad, no una adaptación eléctrica no verificada.</td></tr>
+</tbody></table></div>
+<p>Para portar N habría que evitar la calibración bloqueante, añadir navegación completa por botones o web y verificar los GPIO.
+La web actual no controla todos los menús TFT ni sustituye todas sus actividades.
+Para C hacen falta controlador GT911, reset/IRQ y transformación de coordenadas; el firmware actual sólo maneja XPT2046.
+Que el GT911 permita varios contactos no añade automáticamente gestos o palas simultáneas.</p>
+</section>
+<section id="instalar">
+<h2>2. Instalar y arrancar por primera vez</h2>
+<ol>
+<li>Desconecta alimentación y accesorios; identifica la placa y confirma el perfil. Usa un cable USB de <strong>datos</strong>.</li>
+<li>Desde Chrome o Edge de escritorio abre el <a href="../index.html">instalador HTTPS</a>.
+El teléfono sirve para la web de uso, no se presupone que pueda flashear por USB.</li>
+<li>Escoge <strong>reloj o tutor</strong>. Instalar uno sustituye al otro: no hay selector de firmware durante el arranque.
+Anota ajustes y memorias antes de una operación que pueda borrar flash.</li>
+<li>Selecciona la pantalla exacta y pulsa <strong>Instalar Morse Tutor</strong>. Autoriza sólo el puerto de tu placa.
+No actives un borrado completo si quieres conservar NVS. Si el puerto no aparece, revisa cable y controlador USB del fabricante.</li>
+<li>Espera el fin de grabación, reinicia y toca las <strong>tres cruces</strong> de calibración en orden.
+Usa un puntero romo en resistivo; no rayes ni aprietes el vidrio.</li>
+<li>Abre Ajustes, define indicativo, velocidad y modo de llave. Empieza por 18 WPM de carácter,
+12 WPM Farnsworth y 700 Hz. Son valores iniciales, no una obligación pedagógica.</li>
+</ol>
+<figure><img src="assets/web-instalador.png" alt="Captura del instalador con selector de las cuatro pantallas"><figcaption>Captura real del instalador local preparado para publicación. No se ha iniciado ninguna grabación USB.</figcaption></figure>
+<p>Para recalibrar: con el firmware ya iniciándose, mantén BOOT cuando la aplicación comprueba ese botón.
+Mantenerlo durante reset puede activar el bootloader de ESP32 en vez de recalibrar. Si sucede, suelta BOOT y reinicia.</p>
+</section>
+<section id="navegar">
+<h2>3. Conocer las pantallas</h2>
+<p>Inicio ofrece <strong>Recibir, Enviar y Ajustes</strong>. Toca una tarjeta. Los botones inferiores
+<code>-</code>, <code>+</code> y <code>OK</code> también cambian/aceptan la selección en Inicio.
+En menús, las flechas cambian de página; hay cuatro tarjetas por página. <strong>&lt; Atrás</strong> vuelve.</p>
+<figure class="tft"><img src="assets/tft-inicio.svg" alt="Ilustración del inicio con tres tarjetas"><figcaption>Ilustración TFT 320 × 240; no captura física.</figcaption></figure>
+<h3>Recibir · dos páginas</h3>
+<div class="grid">
+<figure class="tft"><img src="assets/tft-recibir-1.svg" alt="Recibir página 1: Koch, letras, palabras y números"><figcaption>Página 1: Koch, letras, palabras y números.</figcaption></figure>
+<figure class="tft"><img src="assets/tft-recibir-2.svg" alt="Recibir página 2: mixto, SD, QSO e indicativos"><figcaption>Página 2: mixto, tarjeta SD, QSO e indicativos.</figcaption></figure>
+</div>
+<p>Escucha grupos automáticos. <code>OK</code> pausa/reanuda; <code>-</code>/<code>+</code> cambia la velocidad
+para el siguiente envío. QSO genera texto de práctica, <strong>no es un bot conversacional</strong>.
+Los indicativos de ejercicios son ficticios.</p>
+<h3>Enviar · tres páginas</h3>
+<div class="grid">
+<figure class="tft"><img src="assets/tft-enviar-1.svg" alt="Enviar página 1"><figcaption>Práctica, copiar uno/dos caracteres y palabra.</figcaption></figure>
+<figure class="tft"><img src="assets/tft-enviar-2.svg" alt="Enviar página 2"><figcaption>Copiar indicativo, tarjetas, copia mental y Red CW.</figcaption></figure>
+<figure class="tft"><img src="assets/tft-enviar-3.svg" alt="Enviar página 3"><figcaption>Eco, adaptativo, memorias y estadísticas.</figcaption></figure>
+</div>
+<p>Práctica muestra la decodificación de tu manipulación. Copiar propone objetivos visibles.
+Tarjetas y copia mental ocultan el objetivo durante la escucha; <code>OK</code> en tarjetas revela antes de continuar.
+No confundir ese comportamiento con el nuevo eco: en eco/adaptativo <code>OK</code> evalúa la respuesta.</p>
+<h3>Ajustes · cuatro páginas</h3>
+<div class="grid">
+<figure class="tft"><img src="assets/tft-ajustes-1.svg" alt="Ajustes página 1"><figcaption>Velocidad, Farnsworth, tono y manipulador.</figcaption></figure>
+<figure class="tft"><img src="assets/tft-ajustes-2.svg" alt="Ajustes página 2"><figcaption>Indicativo, brillo, nivel Koch y largo de grupo.</figcaption></figure>
+<figure class="tft"><img src="assets/tft-ajustes-3.svg" alt="Ajustes página 3"><figcaption>Restaurar, idioma pantalla, idioma palabras y secuencia Koch.</figcaption></figure>
+<figure class="tft"><img src="assets/tft-ajustes-4.svg" alt="Ajustes página 4"><figcaption>Conjunto propio y pausa entre palabras.</figcaption></figure>
+</div>
+</section>
+<section id="ajustes">
+<h2>4. Configuración de cada parámetro</h2>
+<p>En la TFT: abre el ajuste, usa <code>-</code>/<code>+</code> y pulsa <strong>Guardar</strong>.
+Los ajustes numéricos clásicos se prueban en RAM; volver sin guardar puede mantener el valor durante esa sesión,
+pero no garantiza conservarlo tras reiniciar. Los nuevos selectores de idiomas/secuencia/pausa utilizan un borrador:
+no se aplican hasta guardar. Ante “Error al guardar”, no des por persistido el cambio.</p>
+<div class="scroll"><table>
+<thead><tr><th>Ajuste</th><th>Valores / valor inicial</th><th>Qué cambia y dónde</th></tr></thead>
+<tbody>
+<tr><td>Velocidad</td><td>3–50 WPM; inicial 18</td><td>Velocidad de elementos Morse. En TFT; la web no edita este valor.</td></tr>
+<tr><td>Farnsworth</td><td>3–velocidad de carácter; inicial 12</td><td>Velocidad efectiva reducida al alargar separación; nunca superior a velocidad de carácter.</td></tr>
+<tr><td>Tono</td><td>300–1800 Hz; inicial 700</td><td>Frecuencia del sonido, no volumen. DIT permite probarlo en la pantalla de ajuste.</td></tr>
+<tr><td>Manipulador</td><td>Llave recta / Iambic A / Iambic B; inicial recta</td><td>Contactos secos externos. En recta usar DIT a masa; no aplicar tensión.</td></tr>
+<tr><td>Indicativo</td><td>1–9 caracteres A–Z, 0–9 y /; inicial NOCALL</td><td>Identidad local de la TFT. El campo de envío del móvil se rellena por separado y no guarda este ajuste.</td></tr>
+<tr><td>Brillo</td><td>10–100 %; inicial 80</td><td>PWM del backlight; no modifica el volumen ni mide batería.</td></tr>
+<tr><td>Nivel Koch</td><td>2–longitud de secuencia; inicial 2</td><td>Usa sólo el prefijo del orden seleccionado. Se limita al escoger un conjunto más corto.</td></tr>
+<tr><td>Largo grupo</td><td>1–10; inicial 5</td><td>Número de caracteres de grupos de práctica donde corresponda.</td></tr>
+<tr><td>Restaurar</td><td>Confirmar Sí/No</td><td>Restaura ajustes del tutor; conserva memorias, estadísticas y calibración. No restaura ni modifica Ham-Clock.</td></tr>
+<tr><td>Idioma pantalla</td><td>Español / English / Deutsch / Français / Italiano; inicial español</td><td>TFT y clientes web de esa unidad; persistente. Disponible también en web.</td></tr>
+<tr><td>Idioma palabras</td><td>Los mismos cinco; inicial español</td><td>20 palabras básicas por lengua para las actividades de vocabulario, independientes de los menús. También en web.</td></tr>
+<tr><td>Secuencia Koch</td><td>Bricohams / letras primero / números primero / propio</td><td>Orden progresivo; no importa cursos de otras plataformas. También en web.</td></tr>
+<tr><td>Conjunto propio</td><td>2–40 símbolos Morse ASCII distintos; inicial KM</td><td>Sin duplicados ni espacios. Guardarlo en TFT selecciona ese conjunto; en web hay que elegir “Conjunto propio”.</td></tr>
+<tr><td>Pausa palabras</td><td>×1–×5; inicial ×1</td><td>Wordsworth: multiplica la pausa de siete unidades, además de Farnsworth. No cambia letras/tono ni reproducción de Red CW.</td></tr>
+</tbody></table></div>
+<p>El teclado TFT muestra dos páginas de símbolos: <code>...</code> cambia página,
+<code>_</code> introduce espacio, <strong>Borrar</strong> elimina el último carácter y <strong>Guardar</strong> valida.
+En indicativos no se acepta espacio; en mensajes sí. No rellenar el campo con un indicativo de otra persona.</p>
+</section>
+<section id="idiomas">
+<h2>5. Idiomas y texto internacional</h2>
+<ol><li>En TFT entra en Ajustes, página 3, <strong>Idioma pantalla</strong>; elige con -/+ y guarda.</li>
+<li>O conecta el móvil y usa el selector superior. El cambio se aplica también a la TFT de esa unidad y a sus otros clientes.</li>
+<li>Para practicar italiano con menús españoles, deja español en pantalla y selecciona Italiano en <strong>Idioma palabras</strong>.</li>
+<li>En web abre Ajustes, selecciona vocabulario y guarda; no cambia el idioma del resto de pantallas de la red.</li></ol>
+<div class="grid">
+<figure class="tft"><img src="assets/tft-idioma.svg" alt="Ilustración del selector de idioma"><figcaption>Selector TFT ilustrado. Los nombres se muestran en su propio idioma.</figcaption></figure>
+<figure><img src="assets/web-ajustes.png" alt="Captura web de menús españoles y vocabulario italiano"><figcaption>Web real con API simulada: español en menús, italiano en vocabulario, conjunto KMURE y pausa ×3.</figcaption></figure>
+</div>
+<p>La UI conserva los acentos. Los mensajes y TXT se convierten al Morse básico:
+<code>mañana → MANANA</code>, <code>Grüße → GRUSSE</code>, <code>été → ETE</code>,
+<code>città → CITTA</code>, <code>œ → OE</code>, <code>æ → AE</code>.
+No se transmite Morse nacional extendido. UTF-8 inválido, alfabetos no admitidos y resultados de más de 120 caracteres
+se rechazan. La expansión ß → SS cuenta como dos caracteres. No confundir idioma de vocabulario con traducción automática.</p>
+</section>
+<section id="aprender">
+<h2>6. Primera sesión guiada de diez minutos</h2>
+<ol>
+<li><strong>Preparar:</strong> 18/12 WPM, 700 Hz, grupo de 5, secuencia Bricohams y nivel 2.
+Selecciona el modo de tus contactos. No conectes todavía ningún transmisor.</li>
+<li><strong>Escuchar:</strong> Recibir → Koch. En nivel 2 de Bricohams se usan K y M.
+Escucha varios grupos; pausa con OK. No intentes seguir un ritmo de 50 WPM al empezar.</li>
+<li><strong>Manipular sin llave externa:</strong> Ajustes → Manipulador → Llave recta → Guardar.
+En Enviar → Práctica aparece el botón ancho <strong>Llave CW</strong>. Mantén pulsado para generar la marca
+y suelta para silencio: una pulsación corta hace punto y una tres veces más larga, raya.
+No es un botón que envíe un carácter automáticamente. Si eliges Iambic A/B, se conservan DIT/DAH virtuales.</li>
+<li><strong>Eco:</strong> Enviar, página 3 → Entrenador eco. Escucha el grupo oculto y repítelo.
+Tras siete unidades de silencio se evalúa; OK evalúa manualmente. Sin respuesta, se marca fallo
+a los 60 segundos de terminar el audio. No es un reconocimiento de voz.</li>
+<li><strong>Adaptativo:</strong> usa el mismo esquema, favoreciendo caracteres fallados dentro del nivel actual.
+Los no intentados tienen peso 2; el resto peso 1 más hasta 4 según proporción de errores.
+No aumenta automáticamente la velocidad ni el nivel.</li>
+<li><strong>Revisar:</strong> consulta Estadísticas. Sal con Atrás para guardar resultados.
+Sube el nivel sólo cuando te sientas cómodo; el software no certifica una competencia ni una licencia.</li>
+</ol>
+<figure class="tft"><img src="assets/tft-eco.svg" alt="Ilustración del entrenador eco esperando respuesta"><figcaption>Eco esperando la respuesta. El objetivo no se revela durante la escucha.</figcaption></figure>
+<p>Si necesitas más tiempo entre palabras, prueba pausa ×2 o ×3; no ralentices los puntos/rayas sólo para insertar más silencio.
+El tiempo de punto nominal es <code>1200 / WPM</code> milisegundos. La raya dura tres puntos.
+Las pausas usan la temporización de Farnsworth y, entre palabras, el multiplicador Wordsworth.</p>
+</section>
+<section id="memorias">
+<h2>7. Ocho memorias y estadísticas</h2>
+<h3>Desde la TFT</h3>
+<ol><li>Enviar, página 3 → Memorias. Hay dos páginas de cuatro posiciones.</li>
+<li>Tocar una memoria reproduce su texto. Para editar, selecciona la posición y pulsa <strong>Editar</strong>.</li>
+<li>Escribe hasta 120 caracteres normalizados; guarda. Una memoria vacía no reproduce nada.</li>
+<li>Las flechas pasan entre 1–4 y 5–8. Escuchar es reproducción local: no envía la memoria automáticamente a la red.</li></ol>
+<h3>Desde el móvil</h3>
+<ol><li>Abre Memorias, elige una posición 1–8 y edita el mensaje.</li><li>Pulsa Guardar y comprueba “Guardado”.
+Guardar un mensaje vacío <strong>vacía esa posición</strong>; no hay deshacer.</li>
+<li>Guarda antes de cambiar de posición: cambiar la selección descarta el borrador no guardado de ese editor.</li></ol>
+<div class="grid">
+<figure class="tft"><img src="assets/tft-memorias.svg" alt="Ilustración del menú de memorias"><figcaption>Memorias TFT ilustradas con mensajes de ejemplo.</figcaption></figure>
+<figure><img src="assets/web-memorias.png" alt="Captura real del editor web de memorias"><figcaption>Editor web real; posiciones y mensajes de prueba de la API simulada.</figcaption></figure>
+</div>
+<p>Estadísticas cuenta grupos correctos/intentados y errores por posición esperada.
+Omisiones y sustituciones penalizan el carácter esperado; letras extra hacen fallar el grupo sin sumar intentos de símbolos ajenos al objetivo.
+Se incluyen ejercicios evaluados, no toda la manipulación libre. Los contadores se reducen proporcionalmente al saturarse.</p>
+<div class="grid">
+<figure class="tft"><img src="assets/tft-estadisticas.svg" alt="Ilustración de estadísticas TFT"><figcaption>Ejemplo ilustrado de estadísticas: no son mediciones de un usuario.</figcaption></figure>
+<figure><img src="assets/web-estadisticas.png" alt="Captura de estadísticas web con datos simulados"><figcaption>Web real con dos grupos simulados y errores K/M.</figcaption></figure>
+</div>
+<p class="notice"><strong>Antes de apagar:</strong> sal de la actividad con Atrás.
+Las estadísticas se guardan al salir, no con cada carácter; un corte de corriente puede perder resultados recientes.
+Si guardar falla, corrige el problema antes de apagar.</p>
+</section>
+<section id="red">
+<h2>8. Crear una sala con dos o más tutores</h2>
+<h3>Preparación del móvil</h3>
+<ol>
+<li>Enciende dos unidades con firmware v2.0/v2.1 y sitúalas próximas para la primera prueba.
+Cada una crea <code>Bricohams-CW-XXXXXX</code>, con sufijo propio.</li>
+<li>En WiFi del móvil elige la red de <strong>una sola pantalla</strong>; clave <code>BricohamsCW</code>.
+Acepta permanecer conectado aunque el sistema diga “sin Internet”.</li>
+<li>Abre <code>http://192.168.4.1</code> (HTTP, no HTTPS). Si el móvil usa datos móviles para evitar esa red,
+desactiva temporalmente su cambio automático de red o usa modo avión y vuelve a activar WiFi.</li>
+<li>En cada TFT abre Enviar → Red CW para escuchar los mensajes recibidos.</li>
+</ol>
+<div class="grid">
+<figure class="tft"><img src="assets/tft-red.svg" alt="Ilustración TFT de Red CW"><figcaption>Datos WiFi visibles en la pantalla Red CW. El sufijo real no es EJEMPLO.</figcaption></figure>
+<figure class="tft"><img src="assets/tft-grande.svg" alt="Ilustración Red CW en formato grande"><figcaption>Misma distribución adaptada a 480 × 320. Ilustración, no fotografía de 4″.</figcaption></figure>
+</div>
+<h3>Enviar y decodificar</h3>
+<ol>
+<li>En el móvil introduce tu indicativo y <code>CQ CQ DE NOCALL K</code> como mensaje de prueba si aún no has configurado una identidad.
+Sustituye NOCALL por tu indicativo cuando corresponda. Pulsa <strong>Enviar a todos</strong>.</li>
+<li>El aviso “En cola; entrega no confirmada” indica que se ha aceptado localmente, no que todos lo hayan recibido.</li>
+<li>La otra TFT recibe y reproduce cuando corresponde; el emisor no se reproduce a sí mismo.
+No hace falta conectar las pantallas al AP de otra unidad: ESP-NOW difunde directamente por el canal 1.</li>
+<li>En la receptora elige <code>TXT</code> para texto+audio o <code>CW</code> para ocultar el texto.
+En el móvil usa “Mostrar texto RX decodificado”. Al reactivarlo se revela el historial aún disponible.
+El Morse escrito sigue visible: se oculta la transcripción, no se cifra el mensaje.</li>
+<li>Sin llave externa, selecciona Manipulador → Llave recta y usa <strong>Llave CW</strong> en Red CW:
+mantén para cada marca y suelta para cada pausa. A 12 WPM, un punto dura aproximadamente 100 ms y una raya 300 ms;
+deja una unidad entre marcas de una letra, tres entre letras y siete entre palabras.
+Por ejemplo, <code>SOS = ... --- ...</code>. La superficie resistiva tiene más latencia que una llave física:
+empieza despacio y usa un puntero romo si resulta más cómodo.</li>
+<li>Con llave física o pulsador táctil en Red CW, cada palabra decodificada se difunde tras siete unidades de silencio.
+<strong>Enviar</strong> manda el fragmento ya decodificado. La recepción de audio espera a que termine la palabra local.</li>
+</ol>
+<div class="grid">
+<figure><img src="assets/web-red.png" alt="Captura web con recepción y decodificación visible"><figcaption>Captura real de la web; recepción HOLA RED 73 simulada para el tutorial.</figcaption></figure>
+<figure><img src="assets/web-solo-cw.png" alt="Captura de recepción con texto oculto"><figcaption>Misma web con transcripción RX oculta. No implica cifrado.</figcaption></figure>
+</div>
+<p>La recepción está activa fuera del menú Red CW, pero hay que entrar en él para escuchar la cola.
+El historial web guarda 12 mensajes; hay 12 plazas de reproducción, 12 datagramas pendientes y 8 transmisiones.
+Se reintenta tres veces y se deduplica una ventana de 64. Al llenarse se notifican descartes.</p>
+<p class="notice"><strong>No es radioafición RF ni mesh:</strong> no hay LoRa, repetición entre saltos, Internet ni bandas de radioaficionado.
+Alcance, entrega y orden global no garantizados. AP con clave pública de fábrica y ESP-NOW sin cifrado.
+El checksum no autentica a la persona ni al indicativo. No envíes secretos ni datos personales. Hasta cuatro clientes por AP.
+Para comunicar otra habitación fuera de alcance no basta con colocar una tercera unidad en medio.</p>
+</section>
+<section id="llaves">
+<h2>9. Llave, palas, altavoz y conexiones</h2>
+<h3>Sin accesorios: pulsador Llave CW</h3>
+<p>Disponible en modo <strong>Llave recta</strong> en Práctica, ejercicios de respuesta y Red CW.
+No exige configurar una llave externa ni habilitar GPIO. La superficie se ilumina mientras está pulsada.
+Arrastrar el dedo fuera cancela la marca; para volver a manipular, suelta y pulsa de nuevo.
+Arrastrar dentro desde otro control no inicia una marca. Durante la escucha de un ejercicio no se admite manipulación:
+suelta y vuelve a pulsar al acabar. Atrás/cambio de actividad detiene la señal.
+El botón sólo manipula Morse local: no es una salida de transmisor RF ni un pulsador web en el móvil.</p>
+<h3>Con contactos externos</h3>
+<p>Conecta con la alimentación quitada. En CYD 2,8″ se reservan DIT GPIO22 y DAH GPIO27, activos a masa.
+Una llave recta cierra DIT–GND; palas cierran DIT–GND y DAH–GND independientemente.
+Usa contactos secos; <strong>nunca señales de un transmisor, 5 V, 12 V ni un circuito de keying externo</strong>.</p>
+<p>Consulta el <a href="https://github.com/anatolbricoham/Ham-Clock/blob/main/morse-tutor/hardware/README.md">manual del adaptador, Gerber y cableado</a>
+antes de fabricar. Es un prototipo CYD 2,8″; no asumir que sus conectores coinciden en Freenove/4″.
+En esas dos familias el firmware deja deshabilitados los contactos externos por falta de un conector verificado.</p>
+<ul>
+<li><strong>Llave recta:</strong> tú controlas la duración de marcas y espacios. La velocidad configurada guía la interpretación.</li>
+<li><strong>Iambic A/B:</strong> el keyer genera marcas; el comportamiento al soltar ambas palas diferencia A/B.
+Para apretar ambas a la vez hacen falta palas físicas, no un resistivo de un punto.</li>
+<li><strong>Audio CYD:</strong> GPIO26 es señal, no salida de potencia. Usa entrada de amplificador adecuada y cableado documentado.
+No conectes un altavoz directamente al GPIO.</li>
+<li><strong>Freenove FNK0114L:</strong> el perfil usa ambos DAC25/26 y habilitación GPIO4 activa baja según ejemplos oficiales.
+Empieza con volumen bajo. GPIO27 controla la luz, no DAH.</li>
+<li>No hay entrada de micrófono/receptor ni decodificador de audio externo. La decodificación actual usa contactos o mensajes.</li>
+</ul>
+<p>El tono permite cambiar frecuencia, no implementa un control de volumen universal.
+El adaptador no aporta aislamiento para controlar un transmisor: este firmware no incluye salida de manipulación RF.</p>
+</section>
+<section id="sd">
+<h2>10. Entrenar con tarjeta SD</h2>
+<ol>
+<li>Usa una tarjeta con sistema FAT compatible. Copia TXT ASCII o UTF-8 en la raíz.
+No se documenta soporte para Word, PDF, MP3 ni carpetas recursivas.</li>
+<li>Se listan hasta 20 archivos; nombres menores de 64 bytes. Empieza por <code>practica.txt</code>:</li>
+</ol>
+<pre>KM MK KMMK
+CQ CQ DE NOCALL K
+HOLA RED 73</pre>
+<ol start="3"><li>Inserta antes del arranque; Recibir, página 2 → Tarjeta SD; toca el archivo.</li>
+<li>OK pausa/reanuda. No retires la tarjeta durante la lectura.
+Al terminar aparece fin de archivo; vuelve a seleccionar para repetir.</li>
+<li>Acentos latinos se normalizan. Si se detecta texto no admitido o UTF-8 inválido se pausa con aviso;
+corrige el archivo en el ordenador y vuelve a intentarlo.</li></ol>
+<p>El bus SD es VSPI: SCLK18, MISO19, MOSI23, CS5 en los perfiles actuales.
+No conectes otro periférico a esos pines suponiendo que están libres.</p>
+</section>
+<section id="caja">
+<h2>11. Caja uniforme, batería y montaje</h2>
+<p><a href="cajas.html">Abre el catálogo ilustrado con las nueve variantes y sus descargas</a>.
+Cada variante ofrece reloj con batería y tutor con plataforma de palas, conservando el mismo diseño y wordmark BRICOHAMS.
+No son piezas intercambiables entre tamaños: elige un conjunto completo.</p>
+<ol>
+<li>Comprueba el estado del perfil. Las envolventes provisionales son puntos de partida, no medidas certificadas.
+Mide PCB, vidrio/área táctil, altura, desplazamiento de pantalla, puertos y componentes.</li>
+<li>Descarga y abre la tapa en un slicer. Antes de toda la caja imprime el cupón y una prueba del bisel.
+Las ventanas están centradas: si tu LCD está desplazado, hay que modificar el diseño.</li>
+<li>Referencia: PETG, capa 0,2 mm, 3–4 perímetros y 20–30 % de relleno. Ajusta al material y a tu impresora.</li>
+<li>Base sobre el suelo: necesita soportes bajo las ménsulas de PCB/travesaños.
+Tapa con cara exterior hacia la cama y labio arriba. Revisa la marca grabada en la previsualización.</li>
+<li>La PCB descansa en apoyos de esquina, no en taladros supuestos. Asegura con retención aislante
+apropiada sin presionar vidrio, componentes ni flex. No taladres la placa para adaptar una abrazadera.</li>
+<li>Usa un <strong>power bank USB protegido y cerrado</strong>, envolvente de diseño 100 × 60 × 22 mm.
+Comprueba que no se apaga automáticamente con la carga del equipo. No se ha medido autonomía.</li>
+<li>Sujeta batería/amplificador con elementos aislantes; deja holgura y ventilación.
+El hueco no es un diseño de cargador/BMS ni autorización para una celda de litio desnuda.</li>
+<li>Pasos laterales de cable genéricos, no recortes USB/SD garantizados. No fuerces conectores contra una pared.
+Las aberturas del tutor permiten jacks de panel sólo tras comprobar diámetro y altura reales.</li>
+<li>Con la tapa abierta y sin alimentación verifica recorridos, tornillos y ausencia de cortos.
+Prueba la unidad fuera de la caja antes de cerrar.</li>
+</ol>
+<p>En el tutor, las palas mecánicas son auxiliares comunes a los nueve conjuntos.
+El pivote impreso no conduce: cablea el contacto móvil a GND y el fijo a DIT/DAH sólo si esos pines están habilitados
+y verificados en la placa. La caja de una Freenove o 4″ no habilita palas eléctricas por sí sola.
+Consulta las instrucciones de pivotes/contactos del <a href="https://github.com/anatolbricoham/Ham-Clock/blob/main/morse-tutor/mechanical/README.md">manual mecánico</a>.</p>
+</section>
+<section id="problemas">
+<h2>12. Diagnóstico paso a paso</h2>
+<div class="scroll"><table>
+<thead><tr><th>Síntoma</th><th>Comprobar, por orden</th></tr></thead>
+<tbody>
+<tr><td>No aparece puerto USB</td><td>Cable de datos, puerto directo, alimentación y controlador USB específico del fabricante. Cierra otro monitor serie antes de flashear.</td></tr>
+<tr><td>No conecta el flasheador</td><td>Chrome/Edge de escritorio, HTTPS/localhost, permisos del puerto. BOOT/reset según instrucciones de la placa; no manipular pines desconocidos.</td></tr>
+<tr><td>Imagen blanca, colores erróneos o desplazada</td><td>Perfil/revisión/controlador y alimentación. No alternar firmwares al azar ni asumir que todas las 3,2″ son iguales.</td></tr>
+<tr><td>Calibración no termina</td><td>¿Es realmente XPT2046 resistivo? Una N no puede tocar cruces y una C GT911 no funciona con este controlador. Selección de perfil y cableado.</td></tr>
+<tr><td>Toque invertido o impreciso</td><td>Recalibrar el perfil correcto; pulsar cruces sin mover ni presionar el bisel. No apretar más como solución a un controlador incorrecto.</td></tr>
+<tr><td>Web local no abre</td><td>Conectarse al SSID de esa unidad, aceptar “sin Internet”, usar http://192.168.4.1 y evitar cambio automático a datos móviles/VPN.</td></tr>
+<tr><td>Otra TFT no recibe</td><td>Ambas en v2, próximas, sin obstáculos para primera prueba; entrar Red CW para reproducción. Ver contadores de descartes/fallos y Serial. No hay relé mesh.</td></tr>
+<tr><td>Recibe audio pero no texto</td><td>Modo CW/checkbox RX; habilitar TXT o la casilla de decodificación. No es un fallo del idioma.</td></tr>
+<tr><td>Sin audio</td><td>Prueba de tono, perfil, amplificador y alimentación. No conectar altavoz a GPIO. En Freenove confirmar FNK0114L y circuito de audio.</td></tr>
+<tr><td>Palas no responden</td><td>Modo seleccionado, contactos a GND y pines reales. En Freenove/4″ están deshabilitadas por defecto; no mover DAH al backlight.</td></tr>
+<tr><td>Caracteres incorrectos</td><td>Velocidad real de manipulación frente al ajuste, contactos/retorno y pausas. Revisar A/B. Comprobar normalización de acentos.</td></tr>
+<tr><td>SD no lista archivos</td><td>FAT, TXT en raíz, nombre corto, máximo 20; reiniciar con tarjeta insertada. No asumir exFAT ni carpetas.</td></tr>
+<tr><td>Error al guardar</td><td>No dar por guardado el valor. Ver Serial a 115200 baud y disponibilidad NVS; no borrar toda la flash como primera solución.</td></tr>
+<tr><td>Power bank se apaga / reinicios</td><td>Capacidad de corriente, cable y apagado por baja carga. Probar fuente USB estable fuera de la caja. No modificar la protección de batería.</td></tr>
+<tr><td>La caja no ajusta</td><td>No forzar vidrio/PCB: medir, corregir parámetros y probar un bisel. Malla cerrada no implica ajuste mecánico.</td></tr>
+</tbody></table></div>
+</section>
+<section id="mantenimiento">
+<h2>13. Guardado, actualizaciones y alcance real</h2>
+<ul>
+<li>Configuración clásica, calibración y ajustes avanzados usan espacios NVS separados.
+La v2.1 conserva ajustes v2 anteriores cuando no se borra flash. Ajustes v1 de la adaptación histórica no se importan.</li>
+<li>Guardar memorias las hace persistentes; el historial de mensajes no persiste.
+Las estadísticas se guardan al salir con Atrás, no en cada pulsación. Copia manualmente memorias importantes antes de flashear.</li>
+<li>Restaurar ajustes no es un borrado seguro ni vacía memorias/estadísticas/calibración.
+Si vendes o cedes un equipo revisa qué datos guarda; el tutorial no ejecuta borrados.</li>
+<li>v2.1 y v2.0 comparten formato de mensajes Morse ASCII. No son compatibles con v1/W8BH ni con protocolos Morserino.</li>
+<li>No se incluyen LoRa, Bluetooth de usuario, Internet/iCW, juegos, bot QSO interactivo, Ultimatic/no-squeeze,
+entrada de audio o salida RF. No confundir inspiración funcional con reproducción completa de Morserino-32.</li>
+<li>Los ensayos automatizados cubren lógica/temporización, codec, datos, persistencia simulada y geometría.
+No certifican compatibilidad eléctrica, RF, seguridad térmica, acabado o experiencia táctil.</li>
+</ul>
+</section>
+<section id="galeria">
+<h2>14. Galería de idiomas y trazabilidad</h2>
+<p>Además del español mostrado arriba, estas son capturas de la web real con la misma API de prueba.
+Cambiar idioma no modifica el protocolo ni traduce los mensajes recibidos.</p>
+<div class="grid">
+<figure><img src="assets/web-en.png" alt="Interfaz web en inglés"><figcaption>English · datos simulados.</figcaption></figure>
+<figure><img src="assets/web-de.png" alt="Interfaz web en alemán"><figcaption>Deutsch · datos simulados.</figcaption></figure>
+<figure><img src="assets/web-fr.png" alt="Interfaz web en francés"><figcaption>Français · datos simulados.</figcaption></figure>
+<figure><img src="assets/web-it.png" alt="Interfaz web en italiano"><figcaption>Italiano · datos simulados.</figcaption></figure>
+</div>
+<h3>Reproducir la documentación</h3>
+<p>Las ilustraciones se generan con <code>node morse-tutor\tools\render-manual-tft.mjs</code>.
+Las capturas web se tomaron sirviendo <code>node morse-tutor\test\browser-fixture.mjs</code> en localhost:8174,
+usando el HTML y traducciones incluidos en el firmware. No es una simulación de radio ni de NVS.
+El catálogo mecánico usa <code>mechanical/display-profiles.json</code>; sus fuentes y limitaciones se publican junto a cada variante.</p>
+<p>Fuentes de hardware consultadas el 28/10/2026:
+<a href="https://github.com/rzeldent/platformio-espressif32-sunton">definiciones y esquemas Sunton</a>,
+<a href="https://github.com/Freenove/Freenove_ESP32_Display">ejemplos oficiales Freenove</a>,
+<a href="https://www.lcdwiki.com/3.5inch_ESP32-32E_Display">LCDWIKI 3,5″</a> y
+<a href="https://www.lcdwiki.com/4.0inch_ESP32-32E_Display">LCDWIKI 4″</a>.
+Son familias conocidas/documentadas, <strong>no un ranking verificable de las más vendidas</strong>.
+La autoría Bricohams de esta aplicación no elimina licencias y derechos de dependencias e historial.</p>
+</section>
+<footer><p>BRICOHAMS · Tutorial original · <a href="../index.html">Volver al instalador</a></p></footer>
+</body>
+</html>

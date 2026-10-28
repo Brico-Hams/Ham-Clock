@@ -1,0 +1,16 @@
+{
+  "id": "lcdwiki-40",
+  "name": "LCDWIKI E32R40T / E32N40T 4.0",
+  "pcb": [
+    111.11,
+    60.88
+  ],
+  "window": [
+    87.22,
+    58.88
+  ],
+  "stack": 12,
+  "firmware": [],
+  "basis": "Manufacturer module outline 111.11 x 60.88; window = visual area plus 2mm; centered window/stack/ledge clearance still provisional",
+  "source": "https://www.lcdwiki.com/4.0inch_ESP32-32E_Display"
+}

@@ -1,5 +1,79 @@
 # Cajas imprimibles Bricohams con batería
 
+## Familia ampliada: mismo diseño para nueve variantes
+
+[Catálogo público ilustrado y ZIP por variante](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/docs/cajas.html) ·
+[Manual de montaje y configuración](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/docs/manual.html) ·
+[Descargar toda la familia](downloads/bricohams-display-family.zip).
+
+La familia nueva está en [family/](family/): **36 STL**, una base y tapa de
+reloj y una base y tapa de tutor por variante. Palas, abrazadera y cupón
+siguen siendo las cuatro piezas comunes originales de [stl/](stl/).
+Cada ZIP individual contiene sus cuatro STL y esas cuatro piezas auxiliares,
+perfil JSON, fuente SCAD, catálogo de parámetros, este manual e informe de mallas.
+**No confundir con el ZIP antiguo de ocho piezas**, conservado debajo.
+
+| Variante | Envolvente PCB de diseño, horizontal (mm) | Ventana centrada (mm) | Firmware tutor publicado |
+|---|---|---|---|
+| CYD 2,8 ILI9341/ST7789 | 86 × 50 | 70 × 43 | Dos perfiles 2,8 actuales |
+| Freenove FNK0114L 3,2 | 96 × 60 | 68 × 51 | Perfil Freenove actual |
+| CYD 4 ST7796 | 120 × 70 | 87 × 59 | Perfil 4 actual |
+| ESP32-2432S032N | 96 × 60 | 68 × 51 | Ninguno |
+| ESP32-2432S032R | 96 × 60 | 68 × 51 | Ninguno |
+| ESP32-2432S032C | 96 × 60 | 78 × 55 | Ninguno |
+| ESP32-3248S035R | 106 × 65 | 80 × 52 | Ninguno |
+| LCDWIKI E32R35T/N35T | 101,50 × 55,50 | 79,24 × 51,50 | Ninguno |
+| LCDWIKI E32R40T/N40T | 111,11 × 60,88 | 87,22 × 58,88 | Ninguno |
+
+Todas son **envolventes de diseño pendientes de contraste con la placa**.
+Sólo las dos últimas usan dimensiones de módulo publicadas por LCDWIKI:
+[3,5"](https://www.lcdwiki.com/3.5inch_ESP32-32E_Display) y
+[4"](https://www.lcdwiki.com/4.0inch_ESP32-32E_Display).
+Sus ventanas añaden 2 mm al área visual táctil, pero el centrado y la altura
+de componentes siguen sin estar verificados. Las otras medidas no se presentan
+como cotas del fabricante. Procedencia por perfil en [display-profiles.json](display-profiles.json).
+Son familias conocidas/documentadas, no un ranking de ventas contrastado.
+
+N/R/C requieren atención: las
+[definiciones Sunton](https://github.com/rzeldent/platformio-espressif32-sunton)
+identifican ST7789 en las tres, sin táctil en N, XPT2046 en R y GT911 en C.
+La caja no implementa estos controladores. N necesita navegación sin táctil;
+la web actual no sustituye todos los menús. C no obtiene gestos/multitáctil
+por disponer de ese sensor. **No usar el perfil Freenove por semejanza.**
+
+En todos los conjuntos se conserva la estética: esquinas redondeadas, tapa
+con labio y wordmark BRICOHAMS grabado, cuatro tornillos, soportes perimetrales,
+power bank USB cerrado y, en tutor, plataforma común de palas.
+`family=true` calcula dimensiones exteriores desde PCB y batería; no escala
+los agujeros M3 ni las palas. El vidrio se deja accesible por la ventana,
+no se aprieta entre tapa y PCB. Los pasos de cable siguen siendo genéricos.
+
+**Medir antes de imprimir:** PCB, vidrio/área táctil, desplazamiento respecto
+al centro, altura de componentes, posición y acceso USB/SD, soldaduras,
+aislamiento y retención. Si el LCD no está centrado hay que modificar la
+posición de la ventana en el SCAD. No basta con agrandar la ventana.
+Las bases requieren soportes bajo las ménsulas. Un perfil de caja para
+Freenove/4" no habilita los pines de las palas desactivados en el firmware.
+
+Para regenerar (Node 22, OpenSCAD y PowerShell; desde la raíz del repositorio):
+
+```powershell
+$env:OPENSCAD = 'C:\ruta\openscad.exe'
+node morse-tutor\tools\export-case-family.mjs
+# Opcional: un único perfil
+node morse-tutor\tools\export-case-family.mjs sunton-32c
+node morse-tutor\tools\validate-models.mjs --family
+.\morse-tutor\tools\package-case-family.ps1
+node morse-tutor\tools\generate-case-catalog.mjs
+```
+
+La validación exige cuatro piezas por perfil, superficies cerradas, una sola
+componente, volumen positivo y dimensiones exteriores calculadas. El informe
+está en [family-validation.json](family-validation.json). No comprueba ajuste,
+estabilidad, ergonomía, térmica ni aislamiento.
+
+## Diseño original de 2,8" (conservado)
+
 Diseños originales paramétricos en [bricohams.scad](bricohams.scad).
 Los ocho STL de [stl/](stl/) se han exportado con OpenSCAD y comprobado como
 mallas cerradas, de un solo componente y volumen positivo.

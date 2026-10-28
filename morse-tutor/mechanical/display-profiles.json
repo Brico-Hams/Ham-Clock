@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "units": "mm",
+  "warning": "Design envelopes, not certified fits. Measure the actual PCB, glass, offsets and components. Never infer firmware support from a case.",
+  "profiles": [
+    {
+      "id": "cyd-28",
+      "name": "CYD 2.8 ILI9341 / ST7789",
+      "pcb": [86, 50],
+      "window": [70, 43],
+      "stack": 9,
+      "firmware": ["esp32-2432s028r", "esp32-2432s028r-st7789"],
+      "basis": "Legacy Bricohams design envelope; not manufacturer-certified dimensions",
+      "source": "https://github.com/rzeldent/platformio-espressif32-sunton"
+    },
+    {
+      "id": "freenove-32",
+      "name": "Freenove FNK0114L 3.2",
+      "pcb": [96, 60],
+      "window": [68, 51],
+      "stack": 12,
+      "firmware": ["freenove-32-st7789"],
+      "basis": "Provisional generous design envelope; actual PCB and glass offsets must be measured",
+      "source": "https://github.com/Freenove/Freenove_ESP32_Display"
+    },
+    {
+      "id": "cyd-40",
+      "name": "CYD 4.0 ST7796 target",
+      "pcb": [120, 70],
+      "window": [87, 59],
+      "stack": 12,
+      "firmware": ["esp32-4in-st7796"],
+      "basis": "Generic 4 inch design envelope; not interchangeable with all ST7796 boards",
+      "source": "https://www.lcdwiki.com/4.0inch_ESP32-32E_Display"
+    },
+    {
+      "id": "sunton-32n",
+      "name": "ESP32-2432S032N without touch",
+      "pcb": [96, 60],
+      "window": [68, 51],
+      "stack": 10,
+      "firmware": [],
+      "basis": "Provisional envelope. Sunton board definition confirms ST7789 and no touch, not mechanical dimensions",
+      "source": "https://github.com/rzeldent/platformio-espressif32-sunton/blob/main/esp32-2432S032N.json"
+    },
+    {
+      "id": "sunton-32r",
+      "name": "ESP32-2432S032R resistive",
+      "pcb": [96, 60],
+      "window": [68, 51],
+      "stack": 12,
+      "firmware": [],
+      "basis": "Provisional envelope. Sunton board definition confirms ST7789/XPT2046, not mechanical dimensions",
+      "source": "https://github.com/rzeldent/platformio-espressif32-sunton/blob/main/esp32-2432S032R.json"
+    },
+    {
+      "id": "sunton-32c",
+      "name": "ESP32-2432S032C capacitive",
+      "pcb": [96, 60],
+      "window": [78, 55],
+      "stack": 13,
+      "firmware": [],
+      "basis": "Provisional wider glass access envelope. Sunton definition confirms GT911; glass size/offset must be measured",
+      "source": "https://github.com/rzeldent/platformio-espressif32-sunton/blob/main/esp32-2432S032C.json"
+    },
+    {
+      "id": "sunton-35r",
+      "name": "ESP32-3248S035R resistive",
+      "pcb": [106, 65],
+      "window": [80, 52],
+      "stack": 12,
+      "firmware": [],
+      "basis": "Provisional envelope for commonly documented Sunton family; no sales ranking or verified fit",
+      "source": "https://github.com/rzeldent/platformio-espressif32-sunton/blob/main/esp32-3248S035R.json"
+    },
+    {
+      "id": "lcdwiki-35",
+      "name": "LCDWIKI E32R35T / E32N35T 3.5",
+      "pcb": [101.5, 55.5],
+      "window": [79.24, 51.5],
+      "stack": 12,
+      "firmware": [],
+      "basis": "Manufacturer module outline 101.50 x 55.50; window = touch visual area plus 2mm; centered window/stack/ledge clearance still provisional",
+      "source": "https://www.lcdwiki.com/3.5inch_ESP32-32E_Display"
+    },
+    {
+      "id": "lcdwiki-40",
+      "name": "LCDWIKI E32R40T / E32N40T 4.0",
+      "pcb": [111.11, 60.88],
+      "window": [87.22, 58.88],
+      "stack": 12,
+      "firmware": [],
+      "basis": "Manufacturer module outline 111.11 x 60.88; window = visual area plus 2mm; centered window/stack/ledge clearance still provisional",
+      "source": "https://www.lcdwiki.com/4.0inch_ESP32-32E_Display"
+    }
+  ]
+}

@@ -14,7 +14,7 @@ no se ha incorporado el tutor al bucle ni a las dependencias del reloj.
 El [instalador del tutor](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/)
 se publica junto al existente mediante el workflow de GitHub Pages.
 
-El tutor v2.1 es una nueva implementación Bricohams con menús por tarjetas,
+El tutor v2.1.1 es una nueva implementación Bricohams con menús por tarjetas,
 perfil Freenove 3,2" FNK0114L/ST7789 y sala de mensajes para múltiples
 tutores por ESP-NOW. Cada pantalla ofrece WiFi `Bricohams-CW-XXXXXX`
 (clave `BricohamsCW`) para enviar desde el móvil sin Internet.
@@ -23,6 +23,9 @@ No es una red mesh ni RF de radioaficionado; consultar
 Incluye español, inglés, alemán, francés e italiano, con idioma de interfaz
 y vocabulario independientes; entrenador eco, Koch configurable, práctica
 adaptativa, ocho memorias, estadísticas y pausas Wordsworth.
+En modo llave recta, el pulsador táctil **Llave CW** permite manipular y enviar
+en Red CW sin llave externa, manteniendo pulsado para cada marca y soltando
+para los espacios. En Iambic A/B conserva DIT/DAH virtuales.
 El perfil Freenove es del tutor: no se añade automáticamente al reloj.
 
 El subproyecto incluye una interfaz cableada de llave/audio con Gerber y cajas
@@ -30,6 +33,13 @@ paramétricas imprimibles para reloj con batería y tutor con palas mecánicas.
 Son **prototipos pendientes de validación física**, no hardware certificado.
 Consulta [alimentación, conexiones y fabricación](morse-tutor/hardware/README.md)
 y [las medidas de las cajas](morse-tutor/mechanical/README.md) antes de fabricar.
+El [tutorial ilustrado y manual detallado](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/docs/manual.html)
+incluye todos los ajustes y capturas web con datos simulados, además de
+ilustraciones TFT claramente identificadas.
+El [catálogo de cajas](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/docs/cajas.html)
+ofrece 36 bases/tapas de nueve variantes, incluidas Sunton 3,2" N/R/C y otras
+familias documentadas. Las nuevas cajas no añaden perfiles de firmware ni
+certifican el ajuste de las envolventes provisionales.
 
 Los perfiles del reloj y del tutor fijan `espressif32@6.13.0` (Arduino-ESP32
 2.0.17). El reloj utiliza la API LEDC 2.x; una plataforma sin versión puede

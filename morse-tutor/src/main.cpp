@@ -502,7 +502,7 @@ void loop() {
     }
   }
   bool input = (screen == Screen::Exercise && (activity == Activity::Network ||
-      activity == Activity::Practice || waitingAnswer)) || (screen == Screen::Setting && setting == 2);
+      activity == Activity::Practice || challengeActivity())) || (screen == Screen::Setting && setting == 2);
   static int oldSpeed = -1, oldOverall = -1, oldPitch = -1, oldKeyMode = -1;
   static bool oldInput = false;
   if (config.speed != oldSpeed || config.overall != oldOverall || config.pitch != oldPitch ||

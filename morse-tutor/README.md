@@ -11,6 +11,14 @@ dual. El reloj mantiene su código y sus perfiles separados.
 
 ## Novedades v2.1: cinco idiomas y entrenamiento ampliado
 
+### v2.1.2: refresco parcial de pantalla
+
+Se corrige el parpadeo detectado en el prototipo: el fondo solo se borra al
+cambiar de pantalla, no cada vez que se reproduce/decodifica una letra Morse.
+Durante un ejercicio se actualizan únicamente las líneas que cambian y, cuando
+el texto crece sin desplazarse, solo se pintan los caracteres nuevos. Sin
+cambios en la lógica de audio, ESP-NOW, los pines ni las preferencias.
+
 ### Revisión de código (pendiente de nueva versión)
 
 Correcciones y robustez, sin cambiar el manejo descrito abajo:

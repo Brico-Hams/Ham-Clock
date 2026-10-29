@@ -1,0 +1,34 @@
+name: Verify vendored ESP Web Tools
+
+on:
+  push:
+    branches: ["security/self-host-esp-web-tools"]
+  pull_request:
+    paths:
+      - "tools/vendor-esp-web-tools.mjs"
+      - "tools/esp-web-tools.lock.json"
+      - "webflasher/index.html"
+      - "morse-tutor/webflasher/index.html"
+      - ".github/workflows/webflasher.yml"
+      - ".github/workflows/security-vendor-review.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate script syntax
+        run: node --check tools/vendor-esp-web-tools.mjs
+      - name: Verify pinned SHA-512 and vendor complete browser distribution
+        run: node tools/vendor-esp-web-tools.mjs
+      - name: Verify output file hashes
+        run: |
+          cd webflasher/vendor/esp-web-tools/10.1.1
+          sha256sum --check SHA256SUMS

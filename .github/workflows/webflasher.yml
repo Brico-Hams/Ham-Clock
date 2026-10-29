@@ -11,6 +11,8 @@ on:
       - "src/**"
       - "include/**"
       - "tools/build_webflasher.py"
+      - "tools/vendor-esp-web-tools.mjs"
+      - "tools/esp-web-tools.lock.json"
       - ".github/workflows/webflasher.yml"
   workflow_dispatch:
 
@@ -77,6 +79,9 @@ jobs:
           node morse-tutor/tools/stage-installer.mjs
           node morse-tutor/tools/validate-release.mjs
           node morse-tutor/tools/validate-documentation.mjs
+
+      - name: Stage verified same-origin ESP Web Tools
+        run: node tools/vendor-esp-web-tools.mjs
 
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -4,14 +4,14 @@
 
 A HamClock-inspired ham radio dashboard for the ESP32 Cheap Yellow Display, supporting both the 2.8" ESP32-2432S028R and the 4.0" 320x480 ST7796S variant from a single source tree.
 
-**[Flash it in your browser with the Web Flasher](https://anatolbricoham.github.io/Ham-Clock/)**
+**[Flash it in your browser with the Web Flasher](https://brico-hams.github.io/Ham-Clock/)**
 
 ## Reloj o Morse Tutor Bricohams
 
 El suscriptor puede elegir entre **dos firmwares independientes**: este reloj,
 o [Bricohams Morse Tutor](morse-tutor/README.md). Grabar uno sustituye al otro;
 no se ha incorporado el tutor al bucle ni a las dependencias del reloj.
-El [instalador del tutor](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/)
+El [instalador del tutor](https://brico-hams.github.io/Ham-Clock/morse-tutor/)
 se publica junto al existente mediante el workflow de GitHub Pages.
 
 El tutor v2.1.1 es una nueva implementación Bricohams con menús por tarjetas,
@@ -33,10 +33,10 @@ paramétricas imprimibles para reloj con batería y tutor con palas mecánicas.
 Son **prototipos pendientes de validación física**, no hardware certificado.
 Consulta [alimentación, conexiones y fabricación](morse-tutor/hardware/README.md)
 y [las medidas de las cajas](morse-tutor/mechanical/README.md) antes de fabricar.
-El [tutorial ilustrado y manual detallado](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/docs/manual.html)
+El [tutorial ilustrado y manual detallado](https://brico-hams.github.io/Ham-Clock/morse-tutor/docs/manual.html)
 incluye todos los ajustes y capturas web con datos simulados, además de
 ilustraciones TFT claramente identificadas.
-El [catálogo de cajas](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/docs/cajas.html)
+El [catálogo de cajas](https://brico-hams.github.io/Ham-Clock/morse-tutor/docs/cajas.html)
 ofrece 36 bases/tapas de nueve variantes, incluidas Sunton 3,2" N/R/C y otras
 familias documentadas. Las nuevas cajas no añaden perfiles de firmware ni
 certifican el ajuste de las envolventes provisionales.

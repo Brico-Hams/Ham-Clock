@@ -5,8 +5,8 @@ manipulador/decodificador y sala local de mensajes para múltiples pantallas.
 **No se ejecuta junto a Ham-Clock:** flashear uno sustituye al otro, sin arranque
 dual. El reloj mantiene su código y sus perfiles separados.
 
-- [Instalar el reloj](https://anatolbricoham.github.io/Ham-Clock/)
-- [Instalar Morse Tutor](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/)
+- [Instalar el reloj](https://brico-hams.github.io/Ham-Clock/)
+- [Instalar Morse Tutor](https://brico-hams.github.io/Ham-Clock/morse-tutor/)
 - [Autoría, procedencia y licencias](THIRD_PARTY_NOTICES.md)
 
 ## Novedades v2.1: cinco idiomas y entrenamiento ampliado
@@ -25,8 +25,8 @@ decodificada se difunde tras la pausa o con Enviar. Elegir Iambic A/B conserva
 las palas virtuales DIT/DAH anteriores. El resistivo no permite pulsarlas juntas.
 
 **Documentación ilustrada y descargas:**
-[tutorial y manual detallado](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/docs/manual.html) ·
-[catálogo de cajas](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/docs/cajas.html).
+[tutorial y manual detallado](https://brico-hams.github.io/Ham-Clock/morse-tutor/docs/manual.html) ·
+[catálogo de cajas](https://brico-hams.github.io/Ham-Clock/morse-tutor/docs/cajas.html).
 El manual incluye capturas de la web real con API simulada y vistas TFT
 explícitamente ilustrativas, además de instalación, todos los ajustes,
 ejercicios, red, conexiones, SD, batería y diagnóstico.

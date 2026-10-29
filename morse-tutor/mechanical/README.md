@@ -2,8 +2,8 @@
 
 ## Familia ampliada: mismo diseño para nueve variantes
 
-[Catálogo público ilustrado y ZIP por variante](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/docs/cajas.html) ·
-[Manual de montaje y configuración](https://anatolbricoham.github.io/Ham-Clock/morse-tutor/docs/manual.html) ·
+[Catálogo público ilustrado y ZIP por variante](https://brico-hams.github.io/Ham-Clock/morse-tutor/docs/cajas.html) ·
+[Manual de montaje y configuración](https://brico-hams.github.io/Ham-Clock/morse-tutor/docs/manual.html) ·
 [Descargar toda la familia](downloads/bricohams-display-family.zip).
 
 La familia nueva está en [family/](family/): **36 STL**, una base y tapa de

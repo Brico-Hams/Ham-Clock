@@ -1,0 +1,8 @@
+{
+  "name": "esp-web-tools",
+  "version": "10.1.1",
+  "tarball": "https://registry.npmjs.org/esp-web-tools/-/esp-web-tools-10.1.1.tgz",
+  "integrity": "sha512-cD3nJPaygyKCGhF4R3UpjSeXqeC/BYvOalHe1LXCOIQG0HW/QFgI7TxW8qaIw3A2d+3Mvdi8+DOUXfe5187eSQ==",
+  "license": "Apache-2.0",
+  "upstream": "https://github.com/esphome/esp-web-tools/tree/10.1.1"
+}

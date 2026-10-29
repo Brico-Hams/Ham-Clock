@@ -2,6 +2,7 @@
 
 #include "connectivity.h"
 #include "dashboard_display.h"
+#include "music_player.h"
 #include "reset_button.h"
 #include "settings.h"
 #include "setup_portal.h"
@@ -21,6 +22,8 @@ void setup() {
 
   settingsBegin();
   displayBegin();
+  // Mounts the microSD card; the Music page stays hidden without one.
+  musicBegin();
   // Show this before any Wi-Fi work starts. WiFiMulti's initial multi-network
   // scan is synchronous, so this stays visible on every supported panel until
   // that scan and connection attempt complete.

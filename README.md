@@ -55,7 +55,7 @@ It provides a touch-controlled landscape dashboard — 320x240 on the 2.8" board
 
 - ESP32-2432S028R / CYD ILI9341 display support
 - XPT2046 touch navigation
-- Thirteen dashboard pages, plus an optional ISS tracker:
+- Thirteen dashboard pages, plus an optional ISS tracker and an optional Music page (MP3 from microSD):
   - Clock
   - HF Propagation from HamQSL
   - VHF Conditions from HamQSL
@@ -83,13 +83,21 @@ It provides a touch-controlled landscape dashboard — 320x240 on the 2.8" board
 
 ## Hardware
 
-Three tested targets, all ESP32-WROOM based with an XPT2046 resistive touch controller:
+Three tested targets, plus one untested Freenove target, all ESP32-WROOM based with an XPT2046 resistive touch controller:
 
 | Board | Panel | PlatformIO env | Setup header |
 | --- | --- | --- | --- |
 | ESP32-2432S028R 2.8" | ILI9341 320x240 | `esp32-2432s028r` | `include/User_Setup.h` |
 | ESP32-2432S028R 2.8" | ST7789 320x240 | `esp32-2432s028r-st7789` | `include/User_Setup_ST7789.h` |
 | CYD 4.0" | ST7796S 480x320 | `esp32-4in-st7796` | `include/User_Setup_ST7796.h` |
+| Freenove ESP32 Display 3.2" (FNK0103L) | ST7789 320x240 | `freenove-32-st7789` | `include/User_Setup_Freenove32.h` |
+
+**Freenove FNK0103 (3.2" ST7789):** same 320x240 layouts as the 2.8" CYD. The
+touch controller shares the display bus and has no interrupt line, so touches are
+detected from the pressure reading; the backlight is on GPIO27 and the speaker
+amplifier is enabled by GPIO4. The pin map comes from the BricoHams Morse Tutor's
+Freenove profile; the dashboard has not yet been tested on this board. If colours
+or orientation are wrong, use the Display settings (swap red/blue, flip, mirror).
 
 TFT_eSPI binds its panel driver at compile time, so the board is chosen by the
 environment you build, not at runtime. Each environment force-includes its own
@@ -286,6 +294,7 @@ This web UI is intended for a trusted local network. It does not include authent
 - Tap centre on PSKReporter page: queue a manual PSKReporter refresh (it runs once the five minute minimum interval has elapsed)
 - Tap centre on ISS Tracker page: manual position and pass refresh
 - Tap centre on POTA Spots page: manual POTA refresh
+- Music page: the button row above the footer plays/pauses, skips and sets the volume (see below)
 
 The footer shows Wi-Fi status, NTP status, and current page number. On every page except the Clock it also shows the current UTC time (the Clock page omits this since it already shows a full UTC readout above).
 
@@ -594,12 +603,27 @@ src/
   iss_tracker.*         SGP4 position/track from a fetched TLE, plus N2YO pass fetch
 ```
 
+## Music Player (microSD)
+
+An optional last page, **Music**, plays MP3 files from a microSD card through the
+board's speaker: copy them into `/Music` on a FAT32 card, insert it before power-up
+and connect a small speaker. The page stays hidden without a card or MP3 files,
+and is never picked by the automatic page change. Controls: previous, play/pause,
+next, volume down/up. On the CYD boards audio is 1-bit PDM on GPIO26 (modest
+quality); the Freenove board uses the ESP32's DAC. Adding the SD card means the
+2.8" CYD now bit-bangs its touch controller. Built for all four boards but not yet
+tested on hardware. Details: [docs/modules/music.md](docs/modules/music.md).
+
+The idea comes from Freenove's
+[LVGL Music tutorial](https://docs.freenove.com/projects/fnk0103/en/latest/fnk0103/codes/tutorial/17_LVGL_Music.html);
+Freenove's code (CC BY-NC-SA 3.0) is not used.
+
 ## Notes And Limits
 
 - The setup AP remains available while the device runs.
 - The web UI is for trusted LAN use only.
 - Telnet reading is non-blocking; connection attempts use a short bounded timeout.
-- SD card storage is not required.
+- SD card storage is not required; it is only used by the optional Music page.
 - LVGL is not used.
 - The embedded Greyline map uses flash space; current firmware size is close to the default app partition limit. All three environments use `min_spiffs.csv` to get a large enough app partition. The 4.0" build is the biggest, as it carries a 460x230 map instead of 300x150.
 - The Greyline and PSKReporter maps are composed and pushed one horizontal band at a time rather than as a single sprite, so the map visibly draws in stages. That is deliberate: the 4.0" map would need a 211,600-byte contiguous allocation against a largest free block of about 110,000, so it could not be drawn any other way. Band height is set per board by `MAP_BAND_ROWS` and must divide the map height exactly.

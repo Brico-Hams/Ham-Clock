@@ -27,7 +27,12 @@ The original project is released under the **GNU General Public License v3.0**, 
 | [ArduinoJson](https://arduinojson.org/) | Benoît Blanchon | JSON parsing |
 | [Sgp4](https://github.com/Hopperpop/Sgp4-Library) | Hopperpop | ISS orbit propagation |
 | [arduinoWebSockets](https://github.com/Links2004/arduinoWebSockets) | Markus Sattler (Links2004) | OpenWebRX chat |
+| [ESP8266Audio](https://github.com/earlephilhower/ESP8266Audio) | Earle F. Philhower III (GPL-3.0) | MP3 decoding and audio output of the Music page |
 | [arduino-esp32](https://github.com/espressif/arduino-esp32) | Espressif | ESP32 Arduino core (Wi-Fi, HTTP, Preferences, WebServer, DNS, mDNS) |
+
+## References
+
+- **Freenove** – the [ESP32 Display tutorial, chapter 17 *LVGL Music*](https://docs.freenove.com/projects/fnk0103/en/latest/fnk0103/codes/tutorial/17_LVGL_Music.html) inspired the Music page and documents the board's SD and audio pins. No Freenove code is used (it is CC BY-NC-SA 3.0); the Freenove pin map comes from the BricoHams Morse Tutor in this repository.
 
 ## Data services
 

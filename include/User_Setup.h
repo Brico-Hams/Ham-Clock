@@ -39,6 +39,10 @@
 #define TOUCH_CS  33
 #define TOUCH_IRQ 36
 
+// Music page: the speaker connector's amplifier input is GPIO26. It is driven as
+// 1-bit PDM so GPIO25 stays free (it is the touch clock on the 2.8" board).
+#define MUSIC_AUDIO_PDM_PIN 26
+
 #define LOAD_GLCD
 #define LOAD_FONT2
 #define LOAD_FONT4

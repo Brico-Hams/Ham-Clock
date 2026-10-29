@@ -7,7 +7,7 @@ This module owns the TFT, the touch controller, page navigation, the backlight a
 ## Public API
 
 ```cpp
-constexpr uint8_t kDashboardPageCount = 14;
+constexpr uint8_t kDashboardPageCount = 15;
 const char* dashboardPageName(uint8_t pageIndex);   // "" past the last page
 void displayBegin();                                // TFT init, sprites, module Begin()s, touch bus
 void displayUpdate(const ClockSnapshot& snapshot);  // one frame: touch, data refresh, render
@@ -71,14 +71,15 @@ Every page ends with `drawFooter()`: Wi-Fi state, NTP state, page indicator `n/1
 
 ## Navigation
 
-- `nextPage()` / `previousPage()` wrap around and skip inactive pages (`pageIsActive()` – only the ISS page can be inactive).
+- `nextPage()` / `previousPage()` wrap around and skip inactive pages (`pageIsActive()` – the ISS page until configured, and the Music page without a microSD card with MP3 files).
 - `serviceAutoPageChange()` – when `autoPageChange` is on and the mask is non-zero, moves to the next page whose bit is set in `autoPageMask` every `autoPageSeconds`. Any tap restarts the dwell.
-- `advanceToNextIncludedPage(uint16_t mask)` – stops short of a full lap so a single-page mask does not repaint needlessly.
+- `advanceToNextIncludedPage(uint16_t mask)` – stops short of a full lap so a single-page mask does not repaint needlessly. It never selects the Music page.
 
 ## Touch input
 
-- XPT2046 read over SPI at 2.5 MHz, gated by `TOUCH_IRQ` (LOW = touched), 4 samples averaged per axis.
-- On boards where the touch shares the display SPI pins (4.0"), the code uses `TFT_eSPI::getSPIinstance()` instead of starting a second bus (`TOUCH_SHARES_DISPLAY_BUS`).
+- XPT2046 gated by `TOUCH_IRQ` (LOW = touched), 4 samples averaged per axis. Boards without an interrupt line (`TOUCH_IRQ -1`, Freenove) detect a press from the pressure reading Z1 instead.
+- On boards where the touch shares the display SPI pins (4.0", Freenove), the code uses `TFT_eSPI::getSPIinstance()` at 2.5 MHz instead of starting a second bus (`TOUCH_SHARES_DISPLAY_BUS`).
+- With its own pins (2.8" CYD) the touch controller is bit-banged, leaving HSPI free for the microSD card of the [Music page](music.md).
 - Calibration macros (per setup header, with 2.8" defaults): `TOUCH_RAW_MIN` 120, `TOUCH_RAW_MAX` 3975, `TOUCH_SWAP_XY` 1, `TOUCH_INVERT_X` 0, `TOUCH_INVERT_Y` 1. The 4.0" header uses 200/3980 and inverts both axes.
 - The point is then mirrored to match `flip180` and `mirror`, because the digitiser does not know about MADCTL changes.
 - Debounce 300 ms; one action per press.

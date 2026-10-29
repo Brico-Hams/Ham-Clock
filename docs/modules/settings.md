@@ -111,7 +111,7 @@ At load, a stored TZ equal to `CET-1CEST-2,M3.5.0/2,M10.5.0/3` is rewritten to `
 | --- | --- | --- | --- | --- | --- |
 | `autoPageChange` | `autopage` | bool | false | – | `autopage` |
 | `autoPageSeconds` | `autosecs` | u16 | 15 | 3–600 | `autosecs` |
-| `autoPageMask` | `autopages` | u16 | `0x3FFF` (all 14) | bit *n* = page *n+1* | `pg0` … `pg13` |
+| `autoPageMask` | `autopages` | u16 | `0x7FFF` (all 15) | bit *n* = page *n+1*; bit 14 (Music) is ignored by the rotation | `pg0` … `pg14` |
 | `brightnessPercent` | `bright` | u8 | 100 | 5–100 | `bright` |
 | `nightDimEnabled` | `nightdim` | bool | false | – | `nightdim` |
 | `nightBrightnessPercent` | `nightpct` | u8 | 20 | 5–100 | `nightpct` |

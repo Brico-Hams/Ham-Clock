@@ -16,6 +16,7 @@
 #include "dx_spots.h"
 #include "greyline.h"
 #include "iss_tracker.h"
+#include "music_player.h"
 // The 4.0" board carries a larger map. Both headers define the same width,
 // height and pixel-array identifiers, so nothing below has to know which one a
 // build selected.
@@ -42,8 +43,6 @@ TFT_eSprite dxScrollSprite(&tft);
 #if TOUCH_SCLK == TFT_SCLK && TOUCH_MOSI == TFT_MOSI && TOUCH_MISO == TFT_MISO
 #define TOUCH_SHARES_DISPLAY_BUS
 SPIClass& touchSpi = TFT_eSPI::getSPIinstance();
-#else
-SPIClass touchSpi(HSPI);
 #endif
 
 enum DashboardPage : uint8_t {
@@ -63,6 +62,8 @@ enum DashboardPage : uint8_t {
   kPageAprsWeather,
   kPageAprsStations,
   kPageAprsMap,
+  // Last, so stored rotation masks keep their meaning. Hidden without a card.
+  kPageMusic,
   kPageCount
 };
 
@@ -95,6 +96,9 @@ static_assert(kAutoPageMaskAll == (1u << kPageCount) - 1u,
 // Every page is reachable except the ISS tracker, which stays hidden from
 // both manual and automatic navigation until it has been configured.
 bool pageIsActive(uint8_t page) {
+  if (page == kPageMusic) {
+    return musicAvailable();
+  }
   return page != kPageIss || issTrackerActive();
 }
 
@@ -2974,6 +2978,70 @@ void drawAprsMapPage(const ClockSnapshot& snapshot) {
   drawFooter(snapshot);
 }
 
+// Music page ---------------------------------------------------------------
+// Five buttons above the footer; the rest of the screen keeps the usual
+// left/right page navigation.
+constexpr uint8_t kMusicButtons = 5;
+constexpr int16_t kMusicButtonH = DISPLAY_H >= 320 ? 46 : 34;
+constexpr int16_t kMusicButtonTop = kFooterTop - kMusicButtonH - 4;
+uint32_t g_lastMusicVersion = UINT32_MAX;
+
+int16_t musicButtonAt(uint16_t x, uint16_t y) {
+  if (y < kMusicButtonTop || y >= kMusicButtonTop + kMusicButtonH) {
+    return -1;
+  }
+  return static_cast<int16_t>(x * kMusicButtons / tft.width());
+}
+
+void drawMusicPage(const ClockSnapshot& snapshot) {
+  const uint32_t version = musicStateVersion();
+  if (g_pageDirty || version != g_lastMusicVersion) {
+    g_lastMusicVersion = version;
+    tft.fillRect(0, 0, tft.width(), kFooterTop, kBg);
+    drawCentered("MUSIC", 4, 2, kAccent);
+    tft.drawFastHLine(8, 23, tft.width() - 16, kPanel);
+
+    const uint8_t count = musicTrackCount();
+    const int16_t current = musicCurrentTrack();
+    const uint8_t font = DISPLAY_H >= 320 ? 4 : 2;
+    const int16_t rowH = DISPLAY_H >= 320 ? 30 : 18;
+    const int16_t listTop = 30;
+    const uint8_t rows = static_cast<uint8_t>((kMusicButtonTop - listTop - 22) / rowH);
+    int16_t first = current - rows / 2;
+    first = constrain(first, 0, max(0, static_cast<int>(count) - rows));
+    for (uint8_t row = 0; row < rows && first + row < count; ++row) {
+      const uint8_t index = first + row;
+      const bool active = index == current;
+      const int16_t y = listTop + row * rowH;
+      if (active) {
+        tft.fillRect(6, y - 2, tft.width() - 12, rowH, kPanel);
+      }
+      tft.setTextDatum(TL_DATUM);
+      tft.setTextColor(active ? kAccent : kText, active ? kPanel : kBg);
+      String title = String(index + 1) + ". " + musicTrackTitle(index);
+      while (title.length() > 4 && tft.textWidth(title, font) > tft.width() - 24) {
+        title.remove(title.length() - 1);
+      }
+      tft.drawString(title, 12, y, font);
+    }
+
+    const String status = String(musicIsPlaying() ? "Playing" : "Paused") +
+                          "   Vol " + String(musicVolumePercent()) + "%   " +
+                          String(current + 1) + "/" + String(count);
+    drawCentered(status, kMusicButtonTop - 18, 2, musicIsPlaying() ? kAccent : kMuted);
+
+    static const char* const kLabels[kMusicButtons] = {"|<", ">", ">|", "VOL-", "VOL+"};
+    const int16_t w = tft.width() / kMusicButtons;
+    for (uint8_t i = 0; i < kMusicButtons; ++i) {
+      const int16_t x = i * w;
+      tft.drawRoundRect(x + 3, kMusicButtonTop, w - 6, kMusicButtonH, 6, kAccent);
+      const char* label = (i == 1 && musicIsPlaying()) ? "||" : kLabels[i];
+      drawCenteredAt(label, x + w / 2, kMusicButtonTop + kMusicButtonH / 2 - 8, 2, kText);
+    }
+  }
+  drawFooter(snapshot);
+}
+
 void drawCurrentPage(const ClockSnapshot& snapshot) {
   // Settings may have turned the ISS page off (or the API key emptied) while
   // it was on screen; bounce off it the same way an unmatched page would.
@@ -3033,6 +3101,9 @@ void drawCurrentPage(const ClockSnapshot& snapshot) {
     case kPageAprsMap:
       drawAprsMapPage(snapshot);
       break;
+    case kPageMusic:
+      drawMusicPage(snapshot);
+      break;
     default:
       g_currentPage = kPageClock;
       drawClockPage(snapshot);
@@ -3071,7 +3142,8 @@ void advanceToNextIncludedPage(uint16_t mask) {
   for (uint8_t step = 1; step < kPageCount; ++step) {
     const uint8_t candidate =
         static_cast<uint8_t>((static_cast<uint8_t>(g_currentPage) + step) % kPageCount);
-    if ((mask & (1u << candidate)) && pageIsActive(candidate)) {
+    // The Music page holds its controls, so the rotation never lands on it.
+    if ((mask & (1u << candidate)) && candidate != kPageMusic && pageIsActive(candidate)) {
       g_currentPage = static_cast<DashboardPage>(candidate);
       clearPageState();
       g_pageDirty = true;
@@ -3152,21 +3224,58 @@ void serviceNightDimming(time_t epoch) {
   applyBacklight(target);
 }
 
+// With its own pins the digitiser is bit-banged, as in the Morse Tutor: the
+// display has VSPI and the microSD card of the Music page needs HSPI.
+uint8_t touchTransfer(uint8_t value) {
+#if defined(TOUCH_SHARES_DISPLAY_BUS)
+  return touchSpi.transfer(value);
+#else
+  uint8_t result = 0;
+  for (int8_t bit = 7; bit >= 0; --bit) {
+    digitalWrite(kTouchMosi, (value >> bit) & 1);
+    digitalWrite(kTouchSclk, HIGH);
+    result = (result << 1) | digitalRead(kTouchMiso);
+    digitalWrite(kTouchSclk, LOW);
+  }
+  return result;
+#endif
+}
+
 uint16_t readTouchAxis(uint8_t command) {
-  touchSpi.transfer(command);
-  const uint16_t high = touchSpi.transfer(0x00);
-  const uint16_t low = touchSpi.transfer(0x00);
+  touchTransfer(command);
+  const uint16_t high = touchTransfer(0x00);
+  const uint16_t low = touchTransfer(0x00);
   return ((high << 8) | low) >> 3;
 }
 
+void beginTouchRead() {
+#if defined(TOUCH_SHARES_DISPLAY_BUS)
+  touchSpi.beginTransaction(SPISettings(kTouchFrequency, MSBFIRST, SPI_MODE0));
+#endif
+  digitalWrite(kTouchCs, LOW);
+  delayMicroseconds(2);
+}
+
+void endTouchRead() {
+  digitalWrite(kTouchCs, HIGH);
+#if defined(TOUCH_SHARES_DISPLAY_BUS)
+  touchSpi.endTransaction();
+#endif
+}
+
 bool readRawTouch(uint16_t& rawX, uint16_t& rawY) {
-  if (digitalRead(kTouchIrq) == HIGH) {
+  if (kTouchIrq >= 0 && digitalRead(kTouchIrq) == HIGH) {
     return false;
   }
 
-  touchSpi.beginTransaction(SPISettings(kTouchFrequency, MSBFIRST, SPI_MODE0));
-  digitalWrite(kTouchCs, LOW);
-  delayMicroseconds(2);
+  beginTouchRead();
+  // Boards without the interrupt line (Freenove) detect a press from the
+  // pressure reading Z1 instead.
+  constexpr uint16_t kMinPressure = 100;
+  if (kTouchIrq < 0 && readTouchAxis(0xB0) < kMinPressure) {
+    endTouchRead();
+    return false;
+  }
 
   uint32_t xTotal = 0;
   uint32_t yTotal = 0;
@@ -3176,8 +3285,7 @@ bool readRawTouch(uint16_t& rawX, uint16_t& rawY) {
     yTotal += readTouchAxis(0x90);
   }
 
-  digitalWrite(kTouchCs, HIGH);
-  touchSpi.endTransaction();
+  endTouchRead();
 
   rawX = xTotal / kSamples;
   rawY = yTotal / kSamples;
@@ -3276,6 +3384,14 @@ void handleTouch() {
     } else if (g_currentPage == kPageIss &&
                x >= tft.width() / 3 && x <= (tft.width() * 2) / 3) {
       requestIssTrackerRefresh();
+    } else if (g_currentPage == kPageMusic && musicButtonAt(x, y) >= 0) {
+      switch (musicButtonAt(x, y)) {
+        case 0: musicPrevious(); break;
+        case 1: musicTogglePlay(); break;
+        case 2: musicNext(); break;
+        case 3: musicChangeVolume(-1); break;
+        default: musicChangeVolume(1); break;
+      }
     } else if (g_currentPage == kPageAprsMap &&
                x >= tft.width() / 3 && x <= (tft.width() * 2) / 3) {
       // Full radius, half, quarter, then back round.
@@ -3308,9 +3424,14 @@ void displayBegin() {
 
   pinMode(kTouchCs, OUTPUT);
   digitalWrite(kTouchCs, HIGH);
-  pinMode(kTouchIrq, INPUT);
+  if (kTouchIrq >= 0) {
+    pinMode(kTouchIrq, INPUT);
+  }
 #if !defined(TOUCH_SHARES_DISPLAY_BUS)
-  touchSpi.begin(kTouchSclk, kTouchMiso, kTouchMosi, kTouchCs);
+  pinMode(kTouchSclk, OUTPUT);
+  digitalWrite(kTouchSclk, LOW);
+  pinMode(kTouchMosi, OUTPUT);
+  pinMode(kTouchMiso, INPUT);
 #endif
 
   applyDisplaySettings();
@@ -3339,7 +3460,9 @@ void displayUpdate(const ClockSnapshot& snapshot) {
   serviceNightDimming(snapshot.epoch);
   serviceAutoPageChange(nowMs);
   serviceOpenWebRxChat(snapshot.wifiConnected, g_currentPage == kPageOpenWebRx);
-  if (g_pageDirty || dataChanged || nowMs - g_lastRenderMs >= kRenderIntervalMs) {
+  const bool musicChanged =
+      g_currentPage == kPageMusic && musicStateVersion() != g_lastMusicVersion;
+  if (g_pageDirty || dataChanged || musicChanged || nowMs - g_lastRenderMs >= kRenderIntervalMs) {
     drawCurrentPage(snapshot);
     g_lastRenderMs = nowMs;
   } else if ((g_currentPage == kPageDx || g_currentPage == kPagePota) &&
@@ -3421,6 +3544,7 @@ const char* dashboardPageName(uint8_t pageIndex) {
     case kPageAprsWeather: return "APRS Weather";
     case kPageAprsStations: return "Nearby APRS";
     case kPageAprsMap: return "APRS Map";
+    case kPageMusic: return "Music";
     default: return "";
   }
 }

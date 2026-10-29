@@ -15,7 +15,7 @@ This folder documents the firmware in `src/` and `include/` and explains how to 
 | [Entry point, connectivity, reset button](modules/core.md) | `main.cpp`, `connectivity.*`, `reset_button.*` | Startup order, main loop, Wi-Fi (WiFiMulti), NTP, timezone, BOOT-button factory reset |
 | [Settings](modules/settings.md) | `settings.*`, `include/app_config*.h` | Preferences (NVS) storage, compile-time defaults, validation |
 | [Setup portal](modules/setup-portal.md) | `setup_portal.*` | Captive-portal hotspot, LAN web settings page, `/status` JSON, mDNS |
-| [Dashboard display](modules/dashboard-display.md) | `dashboard_display.*`, `include/User_Setup*.h`, `include/greyline_map*.h` | TFT_eSPI rendering of all 14 pages, touch input, paging, auto page change, backlight/night dimming, panel orientation |
+| [Dashboard display](modules/dashboard-display.md) | `dashboard_display.*`, `include/User_Setup*.h`, `include/greyline_map*.h` | TFT_eSPI rendering of all 15 pages, touch input, paging, auto page change, backlight/night dimming, panel orientation |
 | [Propagation](modules/propagation.md) | `propagation.*` | HamQSL XML (or JSON proxy) solar/band data for the HF and VHF pages |
 | [Greyline](modules/greyline.md) | `greyline.*` | Maidenhead → lat/lon, sunrise/sunset, subsolar point, night fraction, great-circle distance |
 | [DX spots](modules/dx-spots.md) | `dx_spots.*` | DX spots from a JSON feed and/or a persistent Telnet DX Cluster connection |
@@ -23,6 +23,7 @@ This folder documents the firmware in `src/` and `include/` and explains how to 
 | [PSKReporter](modules/psk-reporter.md) | `psk_reporter.*` | Reception reports for the station callsign, streaming XML parse, 5-minute rate floor |
 | [ISS tracker](modules/iss-tracker.md) | `iss_tracker.*` | Celestrak TLE + on-device SGP4 position/ground track, N2YO pass predictions |
 | [DMR & OpenWebRX](modules/dmr-openwebrx.md) | `dmr_panel.*` | OpenWebRX status + chat (WebSocket), DMR hotspot "last heard" (Pi-Star JSON or WPSD HTML) |
+| [Music player](modules/music.md) | `music_player.*` | Optional MP3 playback from microSD (ESP8266Audio): track list, play/pause, next/previous, volume |
 | [APRS nearby](modules/aprs-nearby.md) | `aprs_nearby.*` | Receive-only APRS-IS radius feed, nearest weather station, nearby stations, live APRS map data, optional APRS.fi enrichment |
 
 ## Page map
@@ -43,6 +44,7 @@ This folder documents the firmware in `src/` and `include/` and explains how to 
 | 12 | APRS Weather | aprs_nearby | – |
 | 13 | Nearby APRS | aprs_nearby | – |
 | 14 | APRS Map | aprs_nearby | Cycle zoom (full / ½ / ¼ radius) |
+| 15 | Music *(hidden without a microSD card with MP3 files; never auto-rotated)* | music_player | Button row: previous, play/pause, next, volume −/+ |
 
 Tapping the left or right half of the screen (outside the centre third on pages that have a centre action) moves to the previous/next page. See [dashboard display](modules/dashboard-display.md#touch-input).
 

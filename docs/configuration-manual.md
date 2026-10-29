@@ -16,8 +16,11 @@ For the full list of settings with storage keys and ranges, see the [settings re
 | ESP32-2432S028R 2.8", ILI9341 panel (most common CYD) | `esp32-2432s028r` |
 | ESP32-2432S028R 2.8", ST7789 panel | `esp32-2432s028r-st7789` |
 | CYD 4.0" 480×320, ST7796S panel | `esp32-4in-st7796` |
+| Freenove ESP32 Display 3.2" 320×240, ST7789 panel (FNK0103L) — untested | `freenove-32-st7789` |
 
 If you don't know which 2.8" panel you have, try `esp32-2432s028r` first. If the screen stays white or shows noise, try the ST7789 build.
+
+For the optional **Music** page (MP3 from microSD through the speaker) see [Music player](modules/music.md); it needs no setting, only a card with a `Music` folder inserted before power-up.
 
 ## 2. Build-time configuration (optional)
 

@@ -26,6 +26,7 @@ ENVS = {
     "esp32-2432s028r": 'CYD Ham Dashboard - 2.8" ILI9341',
     "esp32-2432s028r-st7789": 'CYD Ham Dashboard - 2.8" ST7789',
     "esp32-4in-st7796": 'CYD Ham Dashboard - 4.0" ST7796',
+    "freenove-32-st7789": 'Ham Dashboard - Freenove 3.2" ST7789 (FNK0103L)',
 }
 
 # ESP32 Arduino flash layout (min_spiffs.csv keeps otadata at 0xe000).

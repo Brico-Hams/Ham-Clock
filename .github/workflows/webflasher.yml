@@ -8,6 +8,8 @@ on:
       - "morse-tutor/**"
       - "webflasher/**"
       - "platformio.ini"
+      - "src/**"
+      - "include/**"
       - "tools/build_webflasher.py"
       - ".github/workflows/webflasher.yml"
   workflow_dispatch:

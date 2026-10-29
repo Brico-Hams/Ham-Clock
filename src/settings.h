@@ -13,7 +13,7 @@ enum DxSourceMode : uint8_t {
 // Every dashboard page taking part in the automatic page change. One bit per
 // page, bit 0 being page 1; the static_assert in dashboard_display.cpp keeps
 // this in step with the number of pages the dashboard actually has.
-constexpr uint16_t kAutoPageMaskAll = 0x3FFF;
+constexpr uint16_t kAutoPageMaskAll = 0x7FFF;
 constexpr uint8_t kMaxWifiNetworks = 5;
 
 struct WifiNetwork {

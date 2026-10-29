@@ -11,6 +11,28 @@ dual. El reloj mantiene su código y sus perfiles separados.
 
 ## Novedades v2.1: cinco idiomas y entrenamiento ampliado
 
+### Revisión de código (pendiente de nueva versión)
+
+Correcciones y robustez, sin cambiar el manejo descrito abajo:
+
+- **Antirrebote de 5 ms en la llave o palas físicas:** los rebotes del contacto
+  ya no producen chasquidos ni elementos falsos. El retardo es igual al pulsar
+  y al soltar, así que la duración de punto/raya se conserva.
+- **Reproducción sin solapes:** si una reproducción terminaba justo cuando
+  empezaba otra (por ejemplo, al tocar de nuevo una memoria), el tutor podía
+  creer que el audio estaba libre y lanzar encima el siguiente ejercicio.
+- **Tarjeta SD por palabras completas:** cada bloque de unos 110 bytes termina
+  en un espacio, de modo que una palabra ya no se parte entre dos bloques
+  (solo se divide una palabra más larga que el bloque entero).
+- **Sin bloqueo al fallar el guardado:** si no se pueden guardar las
+  estadísticas, Atrás avisa una vez y el segundo toque sale igualmente; las
+  estadísticas siguen en memoria y se reintenta al salir de nuevo.
+- **Inicio sin parpadeo:** la portada se redibuja solo cuando cambia el
+  contador de mensajes de red, no cada 1,5 s.
+- Código: ajustes identificados por nombre y no por posición en el menú, clave
+  WiFi en una única constante y `/api/state` con una sola reserva de memoria.
+  Nuevas pruebas nativas de antirrebote y de bloques SD.
+
 ### v2.1.1: pulsador táctil sin llave externa
 
 En **Ajustes → Manipulador → Llave recta**, las actividades de envío
@@ -274,8 +296,10 @@ En un sistema con g++ (también se ejecutan en CI):
 g++ -std=c++11 -Wall -Wextra -Werror -I morse-tutor/include morse-tutor/test/protocol_morse.cpp -o morse-tests
 ```
 
-Ejecutar el binario resultante. En Windows se ha utilizado el compilador C++
-de Zig ya instalado, sin añadir dependencias al proyecto.
+Ejecutar el binario resultante; además de paquetes y temporización, cubre el
+antirrebote de la llave física. En Windows se ha utilizado el compilador C++
+de Zig ya instalado, sin añadir dependencias al proyecto (con `zig c++`,
+cambiar `-fsyntax-only` por `-c -o <archivo>.o` en las comprobaciones estáticas).
 Las suites adicionales se compilan con:
 
 ```text
@@ -284,7 +308,8 @@ g++ -std=c++11 -Wall -Wextra -Werror -I morse-tutor/include -I morse-tutor/src -
 ```
 
 La primera comprueba los cinco catálogos y vocabularios, glifos, UTF-8,
-normalización, conjuntos Koch, puntuación adaptativa y tiempos exactos Wordsworth.
+normalización, conjuntos Koch, puntuación adaptativa, tiempos exactos Wordsworth
+y el corte de bloques de la SD en palabras completas.
 La segunda utiliza un almacenamiento simulado para probar ocho memorias,
 independencia de idiomas, persistencia, escrituras fallidas y datos corruptos.
 Los tres ejecutables se ejecutan en CI. Para probar el HTML y catálogo reales

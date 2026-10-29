@@ -11,6 +11,17 @@ dual. El reloj mantiene su código y sus perfiles separados.
 
 ## Novedades v2.1: cinco idiomas y entrenamiento ampliado
 
+### v2.1.3: portada BricoHams e indicativo configurable
+
+En un arranque normal se muestra durante un mínimo de 1,9 segundos una
+portada BricoHams a pantalla completa, dibujada directamente en TFT sin
+archivos externos. El menú principal conserva las tarjetas de navegación,
+sitúa la marca BricoHams arriba a la izquierda y muestra arriba a la derecha
+el **indicativo real guardado en CONFIG → Indicativo** (por ejemplo, AO5BH).
+La etiqueta de versión deja de ocupar la cabecera. Cambiar el indicativo en
+CONFIG actualiza la cabecera al volver a Inicio sin borrar los ajustes.
+En la primera instalación puede aparecer antes la calibración táctil.
+
 ### v2.1.2: refresco parcial de pantalla
 
 Se corrige el parpadeo detectado en el prototipo: el fondo solo se borra al

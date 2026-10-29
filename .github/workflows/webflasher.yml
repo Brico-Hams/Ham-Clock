@@ -73,6 +73,7 @@ jobs:
           node tools/validate-models.mjs
           node tools/validate-models.mjs --family
           node tools/package-firmware.mjs
+          node tools/validate-branding.mjs
 
       - name: Stage Morse Tutor installer
         run: |

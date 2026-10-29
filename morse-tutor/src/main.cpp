@@ -97,6 +97,44 @@ void center(const char* label, int x, int y, int width, int size = 2, uint16_t c
   if (int(length) * size * 6 > width) size = 1;
   text(label, x + max(0, (width - int(length) * size * 6) / 2), y, size, color);
 }
+// Draw the same vector BricoHams mark on every supported display size.
+// Keeping it in firmware means no SD/PSRAM/extra image library is required.
+void brandEmblem(int centerX, int centerY, int radius) {
+  display.drawCircle(centerX, centerY, radius, kAccent);
+  display.drawCircle(centerX, centerY, radius - max(2, radius / 10), kMuted);
+  // Radio antenna mast and angled arms.
+  display.drawLine(centerX, centerY - radius * 2 / 3, centerX, centerY + radius / 2, TFT_WHITE);
+  display.drawLine(centerX, centerY - radius / 3, centerX - radius / 2,
+                   centerY + radius / 3, TFT_WHITE);
+  display.drawLine(centerX, centerY - radius / 3, centerX + radius / 2,
+                   centerY + radius / 3, TFT_WHITE);
+  display.fillCircle(centerX, centerY - radius * 2 / 3, max(2, radius / 9), kAccent);
+  display.drawFastHLine(centerX - radius / 2, centerY + radius / 2, radius, kAccent);
+}
+void brandWordmark(int x, int y, int scale) {
+  display.setTextSize(scale);
+  display.setTextColor(TFT_WHITE, kBackground);
+  display.setCursor(x, y);
+  display.print("brico");
+  display.setTextColor(kAccent, kBackground);
+  display.print("hams");
+}
+void drawBootLogo() {
+  display.fillScreen(kBackground);
+  const int centerX = DISPLAY_W / 2;
+  const int centerY = DISPLAY_H / 2 - DISPLAY_H / 10;
+  const int radius = min(DISPLAY_H / 4, 68);
+  brandEmblem(centerX, centerY, radius);
+  const int scale = DISPLAY_W >= 400 ? 5 : 4;
+  const int textWidth = 9 * 6 * scale;
+  const int textY = centerY + radius + 12;
+  brandWordmark((DISPLAY_W - textWidth) / 2, textY, scale);
+}
+void drawHomeBrand() {
+  brandEmblem(20, 20, 11);
+  brandWordmark(40, 12, 2);
+}
+
 void button(int x, int y, int width, int height, const char* label, bool selected = false) {
   display.fillRoundRect(x, y, width, height, 6, selected ? kAccent : kCard);
   display.drawRoundRect(x, y, width, height, 6, kAccent);
@@ -180,8 +218,10 @@ void render() {
   redraw = false;
   if (!updatingExercise) display.fillScreen(kBackground);
   if (screen == Screen::Home) {
-    text("brico", 10, 12); text("hams", 70, 12, 2, kAccent);
-    text("MORSE TUTOR 2.1.2", DISPLAY_W - 104, 18, 1, kMuted);
+    drawHomeBrand();
+    // Use the persisted callsign from Settings, never a hardcoded example.
+    const int callWidth = int(strlen(config.callsign)) * 12;
+    text(config.callsign, DISPLAY_W - callWidth - 8, 12, 2, kAccent);
     display.drawFastHLine(8, 39, DISPLAY_W - 16, kAccent);
     const char* names[] = {tr(Text::Receive), tr(Text::Send), tr(Text::Config)};
     const char* icons[] = {"RX", "TX", "*"};
@@ -675,6 +715,8 @@ void setup() {
   board::begin();
   load();
   board::setBrightness(config.brightness);
+  const uint32_t logoShownAt = millis();
+  drawBootLogo();
   cardReady = board::mountCard();
   if (!networkBegin()) {
     notice = tr(Text::NetworkError);
@@ -684,6 +726,8 @@ void setup() {
     notice = tr(Text::AudioError);
     Serial.println(notice);
   }
+  // Allow the startup logo to remain readable even on a fast boot.
+  while (millis() - logoShownAt < 1900) delay(10);
   redraw = true;
 }
 

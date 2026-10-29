@@ -2,6 +2,8 @@
 
 #include "NetworkProtocol.h"
 
+constexpr const char* kNetworkPassword = "BricohamsCW";
+
 bool networkBegin();
 void networkService();
 bool networkPublish(const char* text, const char* callsign);

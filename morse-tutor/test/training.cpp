@@ -118,8 +118,16 @@ void wordsworth() {
     assert(tone == 200);
   }
 }
+void cardBlocks() {
+  assert(brico::wholeWords("CQ CQ DE EA", 11, false) == 11);
+  assert(brico::wholeWords("CQ CQ DE EA", 11, true) == 9);
+  assert(brico::wholeWords("CQ CQ\nDE", 8, true) == 6);
+  assert(brico::wholeWords("CQ DE ", 6, true) == 6);
+  assert(brico::wholeWords("SUPERCALIFRAGILISTIC", 20, true) == 20);
+  assert(brico::wholeWords("", 0, true) == 0);
+}
 }
 int main() {
-  languages(); normalization(); learning(); wordsworth();
-  puts("PASS: five complete renderable catalogs/vocabularies, UTF-8 normalization, Koch sets, adaptive scoring and exact Wordsworth timings");
+  languages(); normalization(); learning(); wordsworth(); cardBlocks();
+  puts("PASS: five complete renderable catalogs/vocabularies, UTF-8 normalization, Koch sets, adaptive scoring, exact Wordsworth timings and whole-word SD blocks");
 }

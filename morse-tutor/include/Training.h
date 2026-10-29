@@ -96,6 +96,14 @@ inline bool validSet(const char* text) {
   }
   return true;
 }
+// Length of a card block that ends on a word boundary while more file text follows;
+// a single word longer than the block is still split.
+inline size_t wholeWords(const char* raw, size_t count, bool more) {
+  if (!more) return count;
+  for (size_t i = count; i > 0; --i)
+    if (raw[i - 1] == ' ' || raw[i - 1] == '\t' || raw[i - 1] == '\r' || raw[i - 1] == '\n') return i;
+  return count;
+}
 constexpr const char* kWords[kLanguageCount][20] = {
   {"RADIO","ANTENA","SENAL","AMIGO","CASA","HOLA","MAR","SOL","LUNA","MONTE","CABLE","ONDA","NORTE","SUR","ESTE","OESTE","CAMPO","PUERTO","BUENOS","DIAS"},
   {"RADIO","ANTENNA","SIGNAL","FRIEND","HOUSE","HELLO","SEA","SUN","MOON","HILL","CABLE","WAVE","NORTH","SOUTH","EAST","WEST","FIELD","PORT","GOOD","MORNING"},

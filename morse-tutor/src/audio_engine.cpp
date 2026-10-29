@@ -1,6 +1,8 @@
 #include "audio_engine.h"
 #include "board_io.h"
 #include "TonePlayer.h"
+#include "ControlLogic.h"
+#include "NetworkProtocol.h"
 #include <Arduino.h>
 #include <atomic>
 #include <freertos/FreeRTOS.h>
@@ -14,21 +16,27 @@ enum class Kind { Configure, Play };
 struct Command {
   Kind kind = Kind::Configure;
   uint32_t generation = 0;
-  char text[121] = {};
+  char text[brico::kMaxText + 1] = {};
   int speed = 18, overall = 12, pitch = 700, keyMode = 0;
   unsigned wordGap = 1;
   bool enabled = false;
 };
 QueueHandle_t commands = nullptr, events = nullptr;
+constexpr uint32_t kDebounceMs = 5;
 std::atomic<uint32_t> generation{0};
-std::atomic<bool> playing{false}, virtualDit{false}, virtualDah{false};
+// Generation still playing, 0 when idle; the worker clears only its own playback
+// so a finish racing with a newer play() cannot report the new one as idle.
+std::atomic<uint32_t> playing{0};
+std::atomic<bool> virtualDit{false}, virtualDah{false};
 std::atomic<bool> keyActive{false};
 std::atomic<bool> virtualStraight{false};
 bool ready = false;
+void finished(uint32_t id) { playing.compare_exchange_strong(id, 0); }
 void worker(void*) {
   brico::TonePlayer player;
   brico::KeyDecoder decoder;
   brico::IambicKeyer keyer;
+  brico::Debouncer ditContact, dahContact;
   Command config;
   uint32_t currentGeneration = 0;
   uint32_t lastKeyedAt = 0;
@@ -52,7 +60,7 @@ void worker(void*) {
         player.stop(); keyer.reset(); decoder.reset(now);
         if (!player.start(command.text, command.speed, command.overall, now, command.wordGap)) {
           Serial.println("Audio: rejected invalid playback command");
-          playing.store(false);
+          finished(currentGeneration);
         }
       }
     }
@@ -62,15 +70,17 @@ void worker(void*) {
       event.letter = player.takeLetter();
       event.finished = !player.busy();
       if (event.finished) {
-        playing.store(false); keyer.reset(); decoder.reset(now);
+        finished(currentGeneration); keyer.reset(); decoder.reset(now);
       }
       board::tone(player.sounding(), config.pitch);
     } else {
       bool dit = virtualDit.load(), dah = virtualDah.load();
+      bool contactDit = ditContact.sample(board::dit(), now, kDebounceMs);
+      bool contactDah = dahContact.sample(board::dah(), now, kDebounceMs);
       bool keyed = false;
       if (config.enabled) {
-        bool straight = config.keyMode == 0 && (board::dit() || virtualStraight.load());
-        if (config.keyMode != 0) { dit |= board::dit(); dah |= board::dah(); }
+        bool straight = config.keyMode == 0 && (contactDit || virtualStraight.load());
+        if (config.keyMode != 0) { dit |= contactDit; dah |= contactDah; }
         keyed = keyer.sample(dit, dah, config.keyMode == 2, now, 1200 / config.speed) || straight;
         if (keyed) lastKeyedAt = now;
         keyActive.store(keyed || now - lastKeyedAt < uint32_t(7 * 1200 / config.speed));
@@ -116,18 +126,18 @@ bool play(const char* text, int speed, int overall, unsigned wordGap) {
   command.wordGap = wordGap;
   memcpy(command.text, text, strlen(text) + 1);
   command.generation = generation.fetch_add(1) + 1;
-  playing.store(true);
+  playing.store(command.generation);
   if (xQueueSend(commands, &command, 0) != pdTRUE) {
-    playing.store(false); Serial.println("Audio: playback queue full"); return false;
+    playing.store(0); Serial.println("Audio: playback queue full"); return false;
   }
   return true;
 }
 void stop() {
-  playing.store(false); generation.fetch_add(1);
+  playing.store(0); generation.fetch_add(1);
   virtualDit.store(false); virtualDah.store(false);
   virtualStraight.store(false);
 }
-bool busy() { return playing.load(); }
+bool busy() { return playing.load() != 0; }
 bool inputBusy() { return keyActive.load(); }
 bool poll(Event& event) {
   if (!ready) return false;

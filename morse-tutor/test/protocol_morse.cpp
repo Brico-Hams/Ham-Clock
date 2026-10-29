@@ -181,6 +181,30 @@ void touchStraightKey() {
   assert(brico::decode(bytes, size, message.sender, received));
   assert(!strcmp(received.text, "SOS"));
 }
+void debounce() {
+  brico::Debouncer contact;
+  assert(!contact.sample(true, 0, 5));
+  assert(!contact.sample(false, 2, 5)); // Bounce restarts the hold.
+  assert(!contact.sample(true, 3, 5));
+  assert(!contact.sample(true, 7, 5));
+  assert(contact.sample(true, 8, 5));
+  assert(contact.sample(false, 100, 5) && contact.sample(true, 102, 5));
+  assert(contact.sample(false, 103, 5) && !contact.sample(false, 108, 5));
+  brico::Debouncer wrapped;
+  assert(!wrapped.sample(true, 0xfffffffe, 5));
+  assert(wrapped.sample(true, 3, 5));
+  // A bouncy 300 ms press keyed through the debouncer still decodes as one dash.
+  brico::Debouncer key;
+  brico::KeyDecoder decoder;
+  decoder.reset(0);
+  std::string decoded;
+  for (uint32_t now = 0; now <= 1200; ++now) {
+    bool raw = (now < 300 && now % 7 != 3) || (now >= 300 && now < 304 && now % 2);
+    char ch = decoder.sample(key.sample(raw, now, 5), now, 100);
+    if (ch) decoded += ch;
+  }
+  assert(decoded == "T ");
+}
 std::vector<int> squeeze(bool modeB, int release) {
   brico::IambicKeyer keyer;
   std::vector<int> edges;
@@ -242,6 +266,6 @@ void playback() {
 }
 }
 int main() {
-  protocol(); broadcast(); codec(); straightKey(); touchStraightKey(); keyer(); playback();
-  puts("PASS: packet boundaries/corruption, three-node retry deduplication, Morse alphabet, touch straight-key holds/cancellation, straight/iambic keys, PARIS/Farnsworth timing and rollover");
+  protocol(); broadcast(); codec(); straightKey(); touchStraightKey(); debounce(); keyer(); playback();
+  puts("PASS: packet boundaries/corruption, three-node retry deduplication, Morse alphabet, touch straight-key holds/cancellation, key debounce, straight/iambic keys, PARIS/Farnsworth timing and rollover");
 }

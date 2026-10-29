@@ -51,8 +51,9 @@ uint32_t answerDeadline = 0, settingsRevision = 0;
 String transcript, notice;
 String files[20];
 File lessonFile;
-uint32_t nextExercise = 0, lastStatusAt = 0;
+uint32_t nextExercise = 0;
 
+bool editing(Text id) { return kSettings[setting] == id; }
 bool receiveActivity() { return int(activity) <= int(Activity::Calls); }
 bool challengeActivity() { return (activity >= Activity::CopyOne && activity <= Activity::HeadCopy) ||
     activity == Activity::Echo || activity == Activity::Adaptive; }
@@ -188,7 +189,7 @@ void render() {
       String mode = String(tr(networkDecodeEnabled() ? Text::TextAudio : Text::MorseOnly)) + " | RX " + networkPending();
       text(mode.c_str(), 8, 49, 1, kAccent);
       text(networkSsid(), 8, 63, 1, kMuted);
-      text((String(tr(Text::Password)) + ": BricohamsCW | 192.168.4.1").c_str(), 8, 76, 1, kMuted);
+      text((String(tr(Text::Password)) + ": " + kNetworkPassword + " | 192.168.4.1").c_str(), 8, 76, 1, kMuted);
       renderTranscript(94);
       exerciseFooter("CW", "TXT", tr(Text::Send));
     } else {
@@ -205,22 +206,22 @@ void render() {
   } else if (screen == Screen::Setting) {
     header(tr(kSettings[setting]));
     String value;
-    if (setting == 0) value = String(config.speed) + " WPM";
-    if (setting == 1) value = String(config.overall) + " WPM";
-    if (setting == 2) value = String(config.pitch) + " Hz";
-    if (setting == 3) value = config.keyMode == 0 ? tr(Text::Straight) : config.keyMode == 1 ? "Iambic A" : "Iambic B";
-    if (setting == 5) value = String(config.brightness) + " %";
-    if (setting == 6) value = String(config.lesson);
-    if (setting == 7) value = String(config.groupSize);
-    if (setting == 9) value = brico::kLanguageNames[draft.language];
-    if (setting == 10) value = brico::kLanguageNames[draft.vocabulary];
-    if (setting == 11) {
+    if (editing(Text::Speed)) value = String(config.speed) + " WPM";
+    if (editing(Text::Farnsworth)) value = String(config.overall) + " WPM";
+    if (editing(Text::Pitch)) value = String(config.pitch) + " Hz";
+    if (editing(Text::KeyMode)) value = config.keyMode == 0 ? tr(Text::Straight) : config.keyMode == 1 ? "Iambic A" : "Iambic B";
+    if (editing(Text::Brightness)) value = String(config.brightness) + " %";
+    if (editing(Text::KochLevel)) value = String(config.lesson);
+    if (editing(Text::GroupSize)) value = String(config.groupSize);
+    if (editing(Text::UiLanguage)) value = brico::kLanguageNames[draft.language];
+    if (editing(Text::WordLanguage)) value = brico::kLanguageNames[draft.vocabulary];
+    if (editing(Text::Sequence)) {
       const Text names[] = {Text::SequenceBrico, Text::SequenceLetters, Text::SequenceDigits, Text::CustomSet};
       value = tr(names[draft.sequence]);
     }
-    if (setting == 13) value = String("x") + draft.wordGap;
+    if (editing(Text::WordGap)) value = String("x") + draft.wordGap;
     center(value.c_str(), 0, 100, DISPLAY_W, 2, kAccent);
-    if (setting == 2) center(tr(Text::TestTone), 0, 146, DISPLAY_W, 1, kMuted);
+    if (editing(Text::Pitch)) center(tr(Text::TestTone), 0, 146, DISPLAY_W, 1, kMuted);
     if (notice.length()) center(notice.c_str(), 0, kFooter - 22, DISPLAY_W, 1, kAccent);
     footer("-", "+", tr(Text::Save), "DIT", "");
   } else if (screen == Screen::Callsign) {
@@ -287,7 +288,8 @@ void back() {
     if (!networkPublish(outgoingWord, config.callsign)) Serial.println("Network: final word not sent");
     outgoingWord[0] = '\0';
   }
-  if (!trainer::flushStats()) { notice = tr(Text::SaveError); redraw = true; return; }
+  // Warn once on the current screen; a second Back leaves anyway (stats stay in RAM).
+  if (!trainer::flushStats() && notice != tr(Text::SaveError)) { notice = tr(Text::SaveError); redraw = true; return; }
   if (screen == Screen::Callsign && editor == 2) screen = Screen::Memories;
   else screen = screen == Screen::Menu ? Screen::Home : Screen::Menu;
   if (screen == Screen::Menu) { focus = 0; menuPage = 0; }
@@ -365,25 +367,26 @@ void chooseMenu(int index) {
   if (menuGroup < 2) { startActivity(menuGroup == 0 ? kReceive[index].action : kSend[index].action); return; }
   setting = index;
   draft = trainer::settings(); keyboardPage = 0;
-  if (index == 4) { screen = Screen::Callsign; editor = 0; strcpy(editingCall, config.callsign); }
-  else if (index == 12) { screen = Screen::Callsign; editor = 1; strcpy(editingCall, draft.custom); }
-  else if (index == 8) screen = Screen::Reset;
+  if (editing(Text::Callsign)) { screen = Screen::Callsign; editor = 0; strcpy(editingCall, config.callsign); }
+  else if (editing(Text::CustomSet)) { screen = Screen::Callsign; editor = 1; strcpy(editingCall, draft.custom); }
+  else if (editing(Text::Reset)) screen = Screen::Reset;
   else screen = Screen::Setting;
   notice = ""; redraw = true;
 }
 void adjust(int direction) {
   if (screen == Screen::Setting) {
-    if (setting == 0) { config.speed = constrain(config.speed + direction, 3, 50); config.overall = min(config.speed, config.overall); }
-    if (setting == 1) config.overall = constrain(config.overall + direction, 3, config.speed);
-    if (setting == 2) config.pitch = constrain(config.pitch + 25 * direction, 300, 1800);
-    if (setting == 3) config.keyMode = (config.keyMode + direction + 3) % 3;
-    if (setting == 5) { config.brightness = constrain(config.brightness + 5 * direction, 10, 100); board::setBrightness(config.brightness); }
-    if (setting == 6) config.lesson = constrain(config.lesson + direction, 2, int(strlen(trainer::sequence())));
-    if (setting == 7) config.groupSize = constrain(config.groupSize + direction, 1, 10);
-    if (setting == 9) draft.language = (draft.language + direction + 5) % 5;
-    if (setting == 10) draft.vocabulary = (draft.vocabulary + direction + 5) % 5;
-    if (setting == 11) draft.sequence = (draft.sequence + direction + 4) % 4;
-    if (setting == 13) draft.wordGap = constrain(draft.wordGap + direction, 1, 5);
+    constexpr int languages = int(brico::kLanguageCount);
+    if (editing(Text::Speed)) { config.speed = constrain(config.speed + direction, 3, 50); config.overall = min(config.speed, config.overall); }
+    if (editing(Text::Farnsworth)) config.overall = constrain(config.overall + direction, 3, config.speed);
+    if (editing(Text::Pitch)) config.pitch = constrain(config.pitch + 25 * direction, 300, 1800);
+    if (editing(Text::KeyMode)) config.keyMode = (config.keyMode + direction + 3) % 3;
+    if (editing(Text::Brightness)) { config.brightness = constrain(config.brightness + 5 * direction, 10, 100); board::setBrightness(config.brightness); }
+    if (editing(Text::KochLevel)) config.lesson = constrain(config.lesson + direction, 2, int(strlen(trainer::sequence())));
+    if (editing(Text::GroupSize)) config.groupSize = constrain(config.groupSize + direction, 1, 10);
+    if (editing(Text::UiLanguage)) draft.language = (draft.language + direction + languages) % languages;
+    if (editing(Text::WordLanguage)) draft.vocabulary = (draft.vocabulary + direction + languages) % languages;
+    if (editing(Text::Sequence)) draft.sequence = (draft.sequence + direction + 4) % 4;
+    if (editing(Text::WordGap)) draft.wordGap = constrain(draft.wordGap + direction, 1, 5);
   } else if (screen == Screen::Exercise) {
     if (activity == Activity::Network) {
       if (!networkSetDecode(direction > 0)) notice = tr(Text::SaveError);
@@ -407,12 +410,12 @@ void confirm() {
     if (index < menuCount()) chooseMenu(index);
   } else if (screen == Screen::Setting) {
     if (!save()) return;
-    if (setting >= 9) {
+    if (editing(Text::UiLanguage) || editing(Text::WordLanguage) || editing(Text::Sequence) || editing(Text::WordGap)) {
       auto candidate = trainer::settings();
-      if (setting == 9) candidate.language = draft.language;
-      if (setting == 10) candidate.vocabulary = draft.vocabulary;
-      if (setting == 11) candidate.sequence = draft.sequence;
-      if (setting == 13) candidate.wordGap = draft.wordGap;
+      if (editing(Text::UiLanguage)) candidate.language = draft.language;
+      if (editing(Text::WordLanguage)) candidate.vocabulary = draft.vocabulary;
+      if (editing(Text::Sequence)) candidate.sequence = draft.sequence;
+      if (editing(Text::WordGap)) candidate.wordGap = draft.wordGap;
       if (!trainer::save(candidate)) { notice = tr(Text::SaveError); redraw = true; return; }
     }
     back();
@@ -594,6 +597,9 @@ void exerciseTick(const board::Touch& touch) {
         unsigned extra = ch >= 0xc2 && ch <= 0xdf ? 1 : ch >= 0xe0 && ch <= 0xef ? 2 : 0;
         while (extra-- && lessonFile.available()) raw[count++] = char(lessonFile.read());
       }
+      size_t kept = brico::wholeWords(raw, count, lessonFile.available());
+      if (kept < count && !lessonFile.seek(lessonFile.position() - (count - kept))) kept = count;
+      count = kept;
       raw[count] = '\0';
       bool whitespace = true;
       for (size_t i = 0; i < count; ++i)
@@ -650,7 +656,7 @@ void loop() {
     }
   }
   bool input = (screen == Screen::Exercise && (activity == Activity::Network ||
-      activity == Activity::Practice || challengeActivity())) || (screen == Screen::Setting && setting == 2);
+      activity == Activity::Practice || challengeActivity())) || (screen == Screen::Setting && editing(Text::Pitch));
   static int oldSpeed = -1, oldOverall = -1, oldPitch = -1, oldKeyMode = -1;
   static bool oldInput = false;
   if (config.speed != oldSpeed || config.overall != oldOverall || config.pitch != oldPitch ||
@@ -673,7 +679,9 @@ void loop() {
   }
   if (screen == Screen::Exercise) exerciseTick(touch);
   else { audio::Event discarded; while (audio::poll(discarded)) {} }
-  if (screen == Screen::Home && millis() - lastStatusAt > 1500) { lastStatusAt = millis(); redraw = true; }
+  // Repaint Home only when its network status line changes, not on a timer.
+  static unsigned shownPending = 0;
+  if (screen == Screen::Home && networkPending() != shownPending) { shownPending = networkPending(); redraw = true; }
   if (redraw) render();
   delay(1);
 }

@@ -98,7 +98,9 @@ void reply(int code, brico::Text message) {
 
 void serveState() {
   const auto& options = trainer::settings();
-  String result = "{\"ssid\":" + jsonString(ssid) + ",\"decode\":" +
+  String result;
+  result.reserve(4096); // One allocation for the common case instead of dozens of regrowths.
+  result += "{\"ssid\":" + jsonString(ssid) + ",\"decode\":" +
       (autoDecode ? "true" : "false") + ",\"pending\":" + String(uxQueueMessagesWaiting(playback)) +
       ",\"drops\":" + String(callbackDrops.load() + playbackDrops) + ",\"invalid\":" + String(invalidPackets) +
       ",\"sendFailures\":" + String(sendFailures.load()) +
@@ -164,7 +166,7 @@ bool networkBegin() {
   WiFi.setSleep(false);
   WiFi.macAddress(stationMac);
   snprintf(ssid, sizeof(ssid), "Bricohams-CW-%02X%02X%02X", stationMac[3], stationMac[4], stationMac[5]);
-  if (!WiFi.softAP(ssid, "BricohamsCW", brico::kNetworkChannel, false, 4)) {
+  if (!WiFi.softAP(ssid, kNetworkPassword, brico::kNetworkChannel, false, 4)) {
     return failedStartup("Network: default WiFi access point failed");
   }
   if (esp_wifi_set_channel(brico::kNetworkChannel, WIFI_SECOND_CHAN_NONE) != ESP_OK ||
@@ -256,8 +258,8 @@ bool networkBegin() {
   server.onNotFound([] { server.send(404, "text/plain", "No encontrado"); });
   server.begin();
   ready = true;
-  Serial.printf("Bricohams network: SSID %s, password BricohamsCW, http://%s, channel %u\n",
-      ssid, WiFi.softAPIP().toString().c_str(), brico::kNetworkChannel);
+  Serial.printf("Bricohams network: SSID %s, password %s, http://%s, channel %u\n",
+      ssid, kNetworkPassword, WiFi.softAPIP().toString().c_str(), brico::kNetworkChannel);
   return true;
 }
 

@@ -135,16 +135,37 @@ void append(const char* value) {
   redraw = true;
 }
 void append(char value) { char valueString[] = {value, '\0'}; append(valueString); }
-void renderTranscript(int y = 93) {
-  int columns = (DISPLAY_W - 16) / 12;
-  int rows = (kFooter - y - 18) / 18;
-  if (rows < 1) rows = 1;
-  size_t available = size_t(columns * rows);
-  String visible = transcript.length() > available ? transcript.substring(transcript.length() - available) : transcript;
+// Only update the transcript rows that changed, and draw appended characters
+// without clearing their row. This prevents flicker during Morse playback.
+void renderTranscript(int y = 93, bool full = true) {
+  static String shown[16];
+  static int shownY = -1, shownRows = -1;
+  const int columns = (DISPLAY_W - 16) / 12;
+  const int rows = constrain((kFooter - y - 18) / 18, 1, 16);
+  const bool reset = full || shownY != y || shownRows != rows;
+  shownY = y; shownRows = rows;
+  const size_t available = size_t(columns * rows);
+  const String visible = transcript.length() > available ?
+      transcript.substring(transcript.length() - available) : transcript;
   for (int row = 0; row < rows; ++row) {
-    String line = visible.substring(row * columns, (row + 1) * columns);
-    text(line.c_str(), 8, y + row * 18);
+    const String line = visible.substring(row * columns, (row + 1) * columns);
+    if (!reset && line == shown[row]) continue;
+    if (!reset && line.startsWith(shown[row]) && line.length() > shown[row].length()) {
+      char glyphs[128];
+      const size_t prefixWidth = brico::displayText(shown[row].c_str(), glyphs, sizeof(glyphs));
+      text(line.substring(shown[row].length()).c_str(), 8 + int(prefixWidth) * 12, y + row * 18);
+    } else {
+      display.fillRect(8, y + row * 18, DISPLAY_W - 16, 16, kBackground);
+      if (line.length()) text(line.c_str(), 8, y + row * 18);
+    }
+    shown[row] = line;
   }
+}
+void drawExerciseLine(String& shown, const String& value, int y, uint16_t color, bool full) {
+  if (!full && shown == value) return;
+  if (!full) display.fillRect(8, y, DISPLAY_W - 16, 9, kBackground);
+  if (value.length()) text(value.c_str(), 8, y, 1, color);
+  shown = value;
 }
 const char* activityName() {
   for (const auto& entry : kReceive) if (entry.action == activity) return tr(entry.label);
@@ -152,11 +173,15 @@ const char* activityName() {
   return "CW";
 }
 void render() {
+  static Screen paintedScreen = Screen::Home;
+  static bool painted = false;
+  // Wipe only when changing views; keep the TFT intact between letters.
+  const bool updatingExercise = painted && paintedScreen == Screen::Exercise && screen == Screen::Exercise;
   redraw = false;
-  display.fillScreen(kBackground);
+  if (!updatingExercise) display.fillScreen(kBackground);
   if (screen == Screen::Home) {
     text("brico", 10, 12); text("hams", 70, 12, 2, kAccent);
-    text("MORSE TUTOR 2.1.1", DISPLAY_W - 104, 18, 1, kMuted);
+    text("MORSE TUTOR 2.1.2", DISPLAY_W - 104, 18, 1, kMuted);
     display.drawFastHLine(8, 39, DISPLAY_W - 16, kAccent);
     const char* names[] = {tr(Text::Receive), tr(Text::Send), tr(Text::Config)};
     const char* icons[] = {"RX", "TX", "*"};
@@ -184,25 +209,47 @@ void render() {
     center(page.c_str(), 0, kFooter - 20, DISPLAY_W, 1, kMuted);
     footer("<", ">", "OK", "", "");
   } else if (screen == Screen::Exercise) {
-    header(activityName());
+    static String firstLine, secondLine, thirdLine, shownNotice;
+    static bool shownPaused = false, shownKeyDown = false, shownStraight = false;
+    const bool full = !updatingExercise;
+    if (full) {
+      firstLine = secondLine = thirdLine = shownNotice = "";
+      header(activityName());
+    }
     if (activity == Activity::Network) {
-      String mode = String(tr(networkDecodeEnabled() ? Text::TextAudio : Text::MorseOnly)) + " | RX " + networkPending();
-      text(mode.c_str(), 8, 49, 1, kAccent);
-      text(networkSsid(), 8, 63, 1, kMuted);
-      text((String(tr(Text::Password)) + ": " + kNetworkPassword + " | 192.168.4.1").c_str(), 8, 76, 1, kMuted);
-      renderTranscript(94);
-      exerciseFooter("CW", "TXT", tr(Text::Send));
+      const String mode = String(tr(networkDecodeEnabled() ? Text::TextAudio : Text::MorseOnly)) +
+          " | RX " + networkPending();
+      drawExerciseLine(firstLine, mode, 49, kAccent, full);
+      drawExerciseLine(secondLine, networkSsid(), 63, kMuted, full);
+      drawExerciseLine(thirdLine,
+          String(tr(Text::Password)) + ": " + kNetworkPassword + " | 192.168.4.1", 76, kMuted, full);
+      renderTranscript(94, full);
     } else {
       String status = String(config.speed) + "/" + config.overall + " WPM  " + config.pitch + " Hz";
       if (challengeActivity()) status += "  " + String(hits) + "/" + attempts;
-      text(status.c_str(), 8, 49, 1, kMuted);
-      if (activity == Activity::Koch || activity == Activity::Adaptive)
-        text((String(tr(Text::KochLevel)) + " " + config.lesson).c_str(), 8, 64, 1, kAccent);
-      if (waitingAnswer) text(tr(activity == Activity::Flash ? Text::Reveal : Text::AnswerPrompt), 8, 76, 1, kAccent);
-      renderTranscript();
-      exerciseFooter("-", "+", paused ? tr(Text::Next) : "OK");
+      drawExerciseLine(firstLine, status, 49, kMuted, full);
+      const String level = (activity == Activity::Koch || activity == Activity::Adaptive)
+          ? String(tr(Text::KochLevel)) + " " + config.lesson : String();
+      drawExerciseLine(secondLine, level, 64, kAccent, full);
+      const String prompt = waitingAnswer
+          ? String(tr(activity == Activity::Flash ? Text::Reveal : Text::AnswerPrompt)) : String();
+      drawExerciseLine(thirdLine, prompt, 76, kAccent, full);
+      renderTranscript(93, full);
     }
-    if (notice.length()) text(notice.substring(0, (DISPLAY_W - 16) / 6).c_str(), 8, kFooter - 14, 1, kAccent);
+    const bool straight = touchKeyScreen();
+    if (full || straight != shownStraight) {
+      exerciseFooter(activity == Activity::Network ? "CW" : "-",
+          activity == Activity::Network ? "TXT" : "+",
+          activity == Activity::Network ? tr(Text::Send) : (paused ? tr(Text::Next) : "OK"));
+    } else {
+      if (paused != shownPaused && activity != Activity::Network)
+        button(2 * DISPLAY_W / 5 + 2, kFooter, DISPLAY_W / 5 - 4, 33, paused ? tr(Text::Next) : "OK");
+      if (straight && touchKeyDown != shownKeyDown) drawTouchKey();
+    }
+    shownPaused = paused; shownKeyDown = touchKeyDown; shownStraight = straight;
+    drawExerciseLine(shownNotice,
+        notice.length() ? notice.substring(0, (DISPLAY_W - 16) / 6) : String(),
+        kFooter - 14, kAccent, full);
   } else if (screen == Screen::Setting) {
     header(tr(kSettings[setting]));
     String value;
@@ -279,6 +326,8 @@ void render() {
     if (!stats.groups) text(tr(Text::NoStats), 8, 85, 1);
     footer("<", ">", "", "", "");
   }
+  paintedScreen = screen;
+  painted = true;
 }
 void stopPlayback() { audio::stop(); }
 void back() {

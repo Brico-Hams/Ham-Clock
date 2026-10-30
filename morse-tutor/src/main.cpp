@@ -3,6 +3,7 @@
 #include <Preferences.h>
 #include <SD.h>
 #include "board_io.h"
+#include "bricohams_logo.h"
 #include "tutor_network.h"
 #include "audio_engine.h"
 #include "ControlLogic.h"
@@ -99,40 +100,30 @@ void center(const char* label, int x, int y, int width, int size = 2, uint16_t c
 }
 // Draw the same vector BricoHams mark on every supported display size.
 // Keeping it in firmware means no SD/PSRAM/extra image library is required.
-void brandEmblem(int centerX, int centerY, int radius) {
-  display.drawCircle(centerX, centerY, radius, kAccent);
-  display.drawCircle(centerX, centerY, radius - max(2, radius / 10), kMuted);
-  // Radio antenna mast and angled arms.
-  display.drawLine(centerX, centerY - radius * 2 / 3, centerX, centerY + radius / 2, TFT_WHITE);
-  display.drawLine(centerX, centerY - radius / 3, centerX - radius / 2,
-                   centerY + radius / 3, TFT_WHITE);
-  display.drawLine(centerX, centerY - radius / 3, centerX + radius / 2,
-                   centerY + radius / 3, TFT_WHITE);
-  display.fillCircle(centerX, centerY - radius * 2 / 3, max(2, radius / 9), kAccent);
-  display.drawFastHLine(centerX - radius / 2, centerY + radius / 2, radius, kAccent);
-}
-void brandWordmark(int x, int y, int scale) {
-  display.setTextSize(scale);
-  display.setTextColor(TFT_WHITE, kBackground);
-  display.setCursor(x, y);
-  display.print("brico");
-  display.setTextColor(kAccent, kBackground);
-  display.print("hams");
-}
+// The artwork comes from the logo.h that works on the Freenove FNK0114L.
+// It is stored as a compact RGB565 image rather than a placeholder icon.
 void drawBootLogo() {
-  display.fillScreen(kBackground);
-  const int centerX = DISPLAY_W / 2;
-  const int centerY = DISPLAY_H / 2 - DISPLAY_H / 10;
-  const int radius = min(DISPLAY_H / 4, 68);
-  brandEmblem(centerX, centerY, radius);
-  const int scale = DISPLAY_W >= 400 ? 5 : 4;
-  const int textWidth = 9 * 6 * scale;
-  const int textY = centerY + radius + 12;
-  brandWordmark((DISPLAY_W - textWidth) / 2, textY, scale);
+  display.fillScreen(TFT_WHITE);
+  const int width = DISPLAY_W > 400 ? 438 : min(300, DISPLAY_W - 12);
+  const int height = width * brico_logo::kHeight / brico_logo::kWidth;
+  const int y = (DISPLAY_H - height - 28) / 2;
+  brico_logo::draw(display, (DISPLAY_W - width) / 2, y, width, height);
+  const char* subtitle = "MORSE TUTOR";
+  display.setTextSize(2);
+  display.setTextColor(TFT_BLACK, TFT_WHITE);
+  display.setCursor((DISPLAY_W - 11 * 12) / 2, y + height + 13);
+  display.print(subtitle);
 }
 void drawHomeBrand() {
-  brandEmblem(20, 20, 11);
-  brandWordmark(40, 12, 2);
+  // White brand block at top-left; existing menu and callsign stay unchanged.
+  display.fillRect(6, 3, 174, 34, TFT_WHITE);
+  brico_logo::draw(display, 9, 4, 32, 32, 0, 112);
+  display.setTextSize(2);
+  display.setTextColor(0x2125, TFT_WHITE);
+  display.setCursor(46, 12);
+  display.print("brico");
+  display.setTextColor(kAccent, TFT_WHITE);
+  display.print("hams");
 }
 
 void button(int x, int y, int width, int height, const char* label, bool selected = false) {

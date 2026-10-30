@@ -24,13 +24,15 @@ inline int b64(char ch) {
 // Cropping permits using the same real logo as the startup image and the BH
 // pictogram in the main menu. Rendering is scanline-based (<2 KiB static RAM).
 inline void draw(TFT_eSPI& tft, int x, int y, int outputWidth, int outputHeight,
-                 int cropLeft = 0, int cropWidth = kWidth) {
+                 int cropLeft = 0, int cropWidth = kWidth,
+                 bool transparentWhite = false, bool lightInkOnDark = false) {
   if (outputWidth <= 0 || outputWidth > 480 || outputHeight <= 0 ||
       cropLeft < 0 || cropWidth <= 0 || cropLeft + cropWidth > kWidth) return;
   static uint16_t sourceLine[kWidth];
   static uint16_t outputLine[480];
   uint32_t bits = 0;
   int bitCount = 0, sourceX = 0, sourceY = 0, outputY = 0;
+  const bool savedSwap = tft.getSwapBytes();
   tft.setSwapBytes(true);  // Matches the working Freenove sketch.
   tft.startWrite();
   for (const char* p = kPacked; *p && sourceY < kHeight; ++p) {
@@ -42,7 +44,11 @@ inline void draw(TFT_eSPI& tft, int x, int y, int outputWidth, int outputHeight,
     bitCount -= 8;
     const uint8_t packed = uint8_t(bits >> bitCount);
     int count = packed >> 2;
-    const uint16_t colour = kPalette[packed & 3];
+    const uint8_t colourIndex = packed & 3;
+    // Adapt dark artwork to a dark UI without changing the transparent matte:
+    // use an off-white ink, not TFT_WHITE (reserved as transparency key).
+    const uint16_t colour = lightInkOnDark && colourIndex == 1
+        ? uint16_t(0xef7d) : kPalette[colourIndex];
     while (count && sourceY < kHeight) {
       const int n = min(count, kWidth - sourceX);
       for (int i = 0; i < n; ++i) sourceLine[sourceX + i] = colour;
@@ -52,7 +58,10 @@ inline void draw(TFT_eSPI& tft, int x, int y, int outputWidth, int outputHeight,
                outputY * kHeight / outputHeight == sourceY) {
           for (int i = 0; i < outputWidth; ++i)
             outputLine[i] = sourceLine[cropLeft + i * cropWidth / outputWidth];
-          tft.pushImage(x, y + outputY, outputWidth, 1, outputLine);
+          if (transparentWhite)
+            tft.pushImage(x, y + outputY, outputWidth, 1, outputLine, TFT_WHITE);
+          else
+            tft.pushImage(x, y + outputY, outputWidth, 1, outputLine);
           ++outputY;
         }
         sourceX = 0; ++sourceY;
@@ -60,5 +69,6 @@ inline void draw(TFT_eSPI& tft, int x, int y, int outputWidth, int outputHeight,
     }
   }
   tft.endWrite();
+  tft.setSwapBytes(savedSwap);
 }
 } // namespace brico_logo

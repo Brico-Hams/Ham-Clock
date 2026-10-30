@@ -23,7 +23,7 @@ for (const environment of environments) {
   }
   writeFileSync(join(root, 'webflasher', `manifest-${environment}.json`), JSON.stringify({
     name: `Bricohams Morse Tutor (${environment})`,
-    version: '2.1.3',
+    version: '2.1.4',
     new_install_prompt_erase: false,
     builds: [{ chipFamily: 'ESP32', parts: parts.map(part => ({
       path: `firmware/${environment}/${part.file}`, offset: part.offset,

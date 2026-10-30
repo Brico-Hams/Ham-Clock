@@ -11,6 +11,23 @@ dual. El reloj mantiene su código y sus perfiles separados.
 
 ## Novedades v2.1: cinco idiomas y entrenamiento ampliado
 
+### v2.1.4: logo sin fondo blanco y limpieza de pantallas
+
+En el menú de Inicio se elimina el rectángulo blanco del logotipo. El
+RGB565 del logotipo usa el blanco como clave de transparencia y adapta
+los trazos oscuros a un tono claro para que se vean sobre el fondo del
+tutor. La portada de inicio también utiliza el mismo fondo oscuro.
+TFT_eSPI restaura el ajuste de bytes tras renderizar la imagen.
+
+Se invalida la actualización parcial al cambiar de actividad, para que
+no persistan textos de un ejercicio anterior. En cambios de vista se
+mantiene un borrado completo; entre letras dentro de un mismo ejercicio
+solo se redibujan las líneas necesarias, para evitar el parpadeo.
+Si tras esta corrección se ven sombras incluso cuando el fondo ya se ha
+borrado, revisar retención de imagen del panel físico, cableado y tensión
+de alimentación; el software no puede descartar esa causa sin pruebas
+sobre la placa real.
+
 ### v2.1.3: portada BricoHams e indicativo configurable
 
 En un arranque normal se muestra durante un mínimo de 1,9 segundos una

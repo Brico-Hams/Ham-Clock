@@ -103,26 +103,27 @@ void center(const char* label, int x, int y, int width, int size = 2, uint16_t c
 // The artwork comes from the logo.h that works on the Freenove FNK0114L.
 // It is stored as a compact RGB565 image rather than a placeholder icon.
 void drawBootLogo() {
-  display.fillScreen(TFT_WHITE);
+  // Use the normal dark UI background so no white splash is held on the TFT.
+  display.fillScreen(kBackground);
   const int width = DISPLAY_W > 400 ? 438 : min(300, DISPLAY_W - 12);
   const int height = width * brico_logo::kHeight / brico_logo::kWidth;
   const int y = (DISPLAY_H - height - 28) / 2;
-  brico_logo::draw(display, (DISPLAY_W - width) / 2, y, width, height);
+  brico_logo::draw(display, (DISPLAY_W - width) / 2, y, width, height,
+                   0, brico_logo::kWidth, true, true);
   const char* subtitle = "MORSE TUTOR";
   display.setTextSize(2);
-  display.setTextColor(TFT_BLACK, TFT_WHITE);
+  display.setTextColor(TFT_WHITE, kBackground);
   display.setCursor((DISPLAY_W - 11 * 12) / 2, y + height + 13);
   display.print(subtitle);
 }
 void drawHomeBrand() {
-  // White brand block at top-left; existing menu and callsign stay unchanged.
-  display.fillRect(6, 3, 174, 34, TFT_WHITE);
-  brico_logo::draw(display, 9, 4, 32, 32, 0, 112);
+  // Image's white matte is transparent; do not paint a white rectangle.
+  brico_logo::draw(display, 9, 4, 32, 32, 0, 112, true, true);
   display.setTextSize(2);
-  display.setTextColor(0x2125, TFT_WHITE);
+  display.setTextColor(TFT_WHITE, kBackground);
   display.setCursor(46, 12);
   display.print("brico");
-  display.setTextColor(kAccent, TFT_WHITE);
+  display.setTextColor(kAccent, kBackground);
   display.print("hams");
 }
 
@@ -203,9 +204,12 @@ const char* activityName() {
 }
 void render() {
   static Screen paintedScreen = Screen::Home;
+  static Activity paintedActivity = Activity::Letters;
   static bool painted = false;
-  // Wipe only when changing views; keep the TFT intact between letters.
-  const bool updatingExercise = painted && paintedScreen == Screen::Exercise && screen == Screen::Exercise;
+  // Partial redraw is valid only within the exact same exercise. Navigating
+  // to a different activity must clear its old contents, including text.
+  const bool updatingExercise = painted && paintedScreen == Screen::Exercise &&
+      screen == Screen::Exercise && paintedActivity == activity;
   redraw = false;
   if (!updatingExercise) display.fillScreen(kBackground);
   if (screen == Screen::Home) {
@@ -358,6 +362,7 @@ void render() {
     footer("<", ">", "", "", "");
   }
   paintedScreen = screen;
+  paintedActivity = activity;
   painted = true;
 }
 void stopPlayback() { audio::stop(); }

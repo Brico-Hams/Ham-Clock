@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 const source = readFileSync(new URL('../src/main.cpp', import.meta.url), 'utf8');
 const config = readFileSync(new URL('../include/NetworkProtocol.h', import.meta.url), 'utf8');
 const image = readFileSync(new URL('../src/bricohams_logo.h', import.meta.url), 'utf8');
+const boardIO = readFileSync(new URL('../src/board_io.cpp', import.meta.url), 'utf8');
 const board = readFileSync(new URL('../include/BoardConfig.h', import.meta.url), 'utf8');
 assert.match(source, /char callsign\[brico::kCallSize\] = "NOCALL";/);
 assert.match(source, /storage\.getString\("call", "NOCALL"\)/);
@@ -31,6 +32,10 @@ assert.equal(runs.reduce((sum, b) => sum + (b >> 2), 0), 300 * 112, 'image must 
 assert.match(image, /tft\.setSwapBytes\(true\)/);
 assert.match(source, /void drawBootLogo\(\)/);
 assert.match(source, /drawBootLogo\(\);[\s\S]*while \(millis\(\) - logoShownAt < 1900\)/);
+const startup = source.substring(source.indexOf('void setup() {'), source.indexOf('void loop() {'));
+assert.match(startup, /while \(millis\(\) - logoShownAt < 1900\) delay\(10\);\s*[\s\S]*?board::setBrightness\(0\);\s*render\(\);\s*board::setBrightness\(config\.brightness\);/);
+assert.match(boardIO, /constrain\(percent, 0, 100\)/);
+assert(!startup.includes('redraw = true;'), 'Startup should draw full home before enabling backlight');
 assert.doesNotMatch(source, /text\("MORSE TUTOR /);
 assert.doesNotMatch(source, /"AO5BH"/);
 assert.match(config, /constexpr size_t kCallSize = 10;/);

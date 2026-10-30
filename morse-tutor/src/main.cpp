@@ -726,7 +726,13 @@ void setup() {
   }
   // Allow the startup logo to remain readable even on a fast boot.
   while (millis() - logoShownAt < 1900) delay(10);
-  redraw = true;
+  // On SPI TFTs the first frame is assembled over multiple transactions.
+  // Hiding the backlight until render() finishes prevents an intermediate
+  // blank frame with half-drawn home letters from becoming visible.
+  // Only do this once at boot: exercise redraws must stay unmasked.
+  board::setBrightness(0);
+  render();
+  board::setBrightness(config.brightness);
 }
 
 void loop() {

@@ -3,6 +3,7 @@
 #include <Preferences.h>
 #include <SD.h>
 #include "board_io.h"
+#include "bricohams_logo.h"
 #include "tutor_network.h"
 #include "audio_engine.h"
 #include "ControlLogic.h"
@@ -97,6 +98,34 @@ void center(const char* label, int x, int y, int width, int size = 2, uint16_t c
   if (int(length) * size * 6 > width) size = 1;
   text(label, x + max(0, (width - int(length) * size * 6) / 2), y, size, color);
 }
+// Draw the same vector BricoHams mark on every supported display size.
+// Keeping it in firmware means no SD/PSRAM/extra image library is required.
+// The artwork comes from the logo.h that works on the Freenove FNK0114L.
+// It is stored as a compact RGB565 image rather than a placeholder icon.
+void drawBootLogo() {
+  display.fillScreen(TFT_WHITE);
+  const int width = DISPLAY_W > 400 ? 438 : min(300, DISPLAY_W - 12);
+  const int height = width * brico_logo::kHeight / brico_logo::kWidth;
+  const int y = (DISPLAY_H - height - 28) / 2;
+  brico_logo::draw(display, (DISPLAY_W - width) / 2, y, width, height);
+  const char* subtitle = "MORSE TUTOR";
+  display.setTextSize(2);
+  display.setTextColor(TFT_BLACK, TFT_WHITE);
+  display.setCursor((DISPLAY_W - 11 * 12) / 2, y + height + 13);
+  display.print(subtitle);
+}
+void drawHomeBrand() {
+  // White brand block at top-left; existing menu and callsign stay unchanged.
+  display.fillRect(6, 3, 174, 34, TFT_WHITE);
+  brico_logo::draw(display, 9, 4, 32, 32, 0, 112);
+  display.setTextSize(2);
+  display.setTextColor(0x2125, TFT_WHITE);
+  display.setCursor(46, 12);
+  display.print("brico");
+  display.setTextColor(kAccent, TFT_WHITE);
+  display.print("hams");
+}
+
 void button(int x, int y, int width, int height, const char* label, bool selected = false) {
   display.fillRoundRect(x, y, width, height, 6, selected ? kAccent : kCard);
   display.drawRoundRect(x, y, width, height, 6, kAccent);
@@ -180,8 +209,10 @@ void render() {
   redraw = false;
   if (!updatingExercise) display.fillScreen(kBackground);
   if (screen == Screen::Home) {
-    text("brico", 10, 12); text("hams", 70, 12, 2, kAccent);
-    text("MORSE TUTOR 2.1.2", DISPLAY_W - 104, 18, 1, kMuted);
+    drawHomeBrand();
+    // Use the persisted callsign from Settings, never a hardcoded example.
+    const int callWidth = int(strlen(config.callsign)) * 12;
+    text(config.callsign, DISPLAY_W - callWidth - 8, 12, 2, kAccent);
     display.drawFastHLine(8, 39, DISPLAY_W - 16, kAccent);
     const char* names[] = {tr(Text::Receive), tr(Text::Send), tr(Text::Config)};
     const char* icons[] = {"RX", "TX", "*"};
@@ -675,6 +706,8 @@ void setup() {
   board::begin();
   load();
   board::setBrightness(config.brightness);
+  const uint32_t logoShownAt = millis();
+  drawBootLogo();
   cardReady = board::mountCard();
   if (!networkBegin()) {
     notice = tr(Text::NetworkError);
@@ -684,6 +717,8 @@ void setup() {
     notice = tr(Text::AudioError);
     Serial.println(notice);
   }
+  // Allow the startup logo to remain readable even on a fast boot.
+  while (millis() - logoShownAt < 1900) delay(10);
   redraw = true;
 }
 

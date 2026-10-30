@@ -23,7 +23,8 @@
 #define TOUCH_SCLK 14
 #define TOUCH_MOSI 13
 #define TOUCH_MISO 12
-#define SPI_FREQUENCY 80000000
+// Conservative ST7789 bus clock: 80 MHz can leave corrupt/stale pixels.
+#define SPI_FREQUENCY 40000000
 #elif BRICO_PANEL == 7796
 #define ST7796_DRIVER
 #define TFT_WIDTH 320

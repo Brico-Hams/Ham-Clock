@@ -25,7 +25,8 @@ inline int b64(char ch) {
 // pictogram in the main menu. Rendering is scanline-based (<2 KiB static RAM).
 inline void draw(TFT_eSPI& tft, int x, int y, int outputWidth, int outputHeight,
                  int cropLeft = 0, int cropWidth = kWidth,
-                 bool transparentWhite = false, bool lightInkOnDark = false) {
+                 bool transparentWhite = false, bool lightInkOnDark = false,
+                 uint16_t matteColor = TFT_WHITE) {
   if (outputWidth <= 0 || outputWidth > 480 || outputHeight <= 0 ||
       cropLeft < 0 || cropWidth <= 0 || cropLeft + cropWidth > kWidth) return;
   static uint16_t sourceLine[kWidth];
@@ -47,8 +48,12 @@ inline void draw(TFT_eSPI& tft, int x, int y, int outputWidth, int outputHeight,
     const uint8_t colourIndex = packed & 3;
     // Adapt dark artwork to a dark UI without changing the transparent matte:
     // use an off-white ink, not TFT_WHITE (reserved as transparency key).
-    const uint16_t colour = lightInkOnDark && colourIndex == 1
-        ? uint16_t(0xef7d) : kPalette[colourIndex];
+    // The home header has a flat background. Compose the image explicitly
+    // into that colour instead of relying on TFT_eSPI colour-key semantics,
+    // which have proved unreliable on the prototype ST7789.
+    const uint16_t colour = transparentWhite && colourIndex == 0
+        ? matteColor : (lightInkOnDark && colourIndex == 1
+            ? uint16_t(0xef7d) : kPalette[colourIndex]);
     while (count && sourceY < kHeight) {
       const int n = min(count, kWidth - sourceX);
       for (int i = 0; i < n; ++i) sourceLine[sourceX + i] = colour;
@@ -58,10 +63,9 @@ inline void draw(TFT_eSPI& tft, int x, int y, int outputWidth, int outputHeight,
                outputY * kHeight / outputHeight == sourceY) {
           for (int i = 0; i < outputWidth; ++i)
             outputLine[i] = sourceLine[cropLeft + i * cropWidth / outputWidth];
-          if (transparentWhite)
-            tft.pushImage(x, y + outputY, outputWidth, 1, outputLine, TFT_WHITE);
-          else
-            tft.pushImage(x, y + outputY, outputWidth, 1, outputLine);
+          // Always overwrite every pixel; a 1-colour matte matches the UI.
+          // No transparent pushImage calls that might leave stale pixels.
+          tft.pushImage(x, y + outputY, outputWidth, 1, outputLine);
           ++outputY;
         }
         sourceX = 0; ++sourceY;

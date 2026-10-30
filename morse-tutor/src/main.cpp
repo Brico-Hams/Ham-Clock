@@ -109,7 +109,7 @@ void drawBootLogo() {
   const int height = width * brico_logo::kHeight / brico_logo::kWidth;
   const int y = (DISPLAY_H - height - 28) / 2;
   brico_logo::draw(display, (DISPLAY_W - width) / 2, y, width, height,
-                   0, brico_logo::kWidth, true, true);
+                   0, brico_logo::kWidth, true, true, kBackground);
   const char* subtitle = "MORSE TUTOR";
   display.setTextSize(2);
   display.setTextColor(TFT_WHITE, kBackground);
@@ -118,7 +118,7 @@ void drawBootLogo() {
 }
 void drawHomeBrand() {
   // Image's white matte is transparent; do not paint a white rectangle.
-  brico_logo::draw(display, 9, 4, 32, 32, 0, 112, true, true);
+  brico_logo::draw(display, 9, 4, 32, 32, 0, 112, true, true, kBackground);
   display.setTextSize(2);
   display.setTextColor(TFT_WHITE, kBackground);
   display.setCursor(46, 12);
@@ -151,7 +151,9 @@ void drawTouchKey() {
       tr(Text::TouchKey), touchKeyDown);
 }
 void exerciseFooter(const char* first, const char* second, const char* third) {
-  footer(first, second, third, touchKeyScreen() ? "" : "DIT", touchKeyScreen() ? "" : "DAH");
+  // DIT/DAH are sending paddles. Never show them in receive-only lessons.
+  const bool paddles = !receiveActivity() && !touchKeyScreen();
+  footer(first, second, third, paddles ? "DIT" : "", paddles ? "DAH" : "");
   if (touchKeyScreen()) drawTouchKey();
 }
 void header(const char* title) {
@@ -305,7 +307,7 @@ void render() {
     center(value.c_str(), 0, 100, DISPLAY_W, 2, kAccent);
     if (editing(Text::Pitch)) center(tr(Text::TestTone), 0, 146, DISPLAY_W, 1, kMuted);
     if (notice.length()) center(notice.c_str(), 0, kFooter - 22, DISPLAY_W, 1, kAccent);
-    footer("-", "+", tr(Text::Save), "DIT", "");
+    footer("-", "+", tr(Text::Save), "", "");
   } else if (screen == Screen::Callsign) {
     header(tr(editor == 0 ? Text::Callsign : editor == 1 ? Text::CustomSet : Text::Memories));
     size_t length = strlen(editingCall);

@@ -11,6 +11,22 @@ dual. El reloj mantiene su código y sus perfiles separados.
 
 ## Novedades v2.1: cinco idiomas y entrenamiento ampliado
 
+### v2.1.5: imagen de cabecera y botones de recepción
+
+Para la pantalla Freenove FNK0114L de 3,2 pulgadas se baja el reloj del bus
+TFT de 80 a 40 MHz para mejorar el margen de las transferencias SPI. La
+miniatura BricoHams compone su fondo al mismo color de la interfaz (RGB565):
+no usa la variante de `pushImage` con clave de transparencia, y sobrescribe
+todos los píxeles, eliminando el rectángulo blanco y evitando restos previos.
+El logo de arranque conserva el mismo diseño.
+
+DIT/DAH solo aparecen en ejercicios de envío con manipulación iámbica.
+No aparecen en RECIBIR ni como botón inerte dentro de Configuración. La
+limpieza completa al cambiar de actividad y el refresco parcial dentro de
+ella se mantienen. Es una corrección de software, pero si persisten sombras
+tras un borrado completo conviene diferenciarlo de retención temporal del
+panel real. Se mantiene íntegro el indicativo configurable y el audio.
+
 ### v2.1.4: logo sin fondo blanco y limpieza de pantallas
 
 En el menú de Inicio se elimina el rectángulo blanco del logotipo. El

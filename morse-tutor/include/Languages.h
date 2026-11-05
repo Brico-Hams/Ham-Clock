@@ -39,6 +39,10 @@ X(Pitch,"Tono","Pitch","Tonhöhe","Tonalité","Tono") \
 X(KeyMode,"Manipulador","Key mode","Tastmodus","Manipulateur","Tasto") \
 X(Callsign,"Indicativo","Call sign","Rufzeichen","Indicatif","Nominativo") \
 X(Brightness,"Brillo","Brightness","Helligkeit","Luminosité","Luminosità") \
+X(Theme,"Tema","Theme","Design","Thème","Tema") \
+X(Dark,"Oscuro","Dark","Dunkel","Sombre","Scuro") \
+X(Light,"Claro","Light","Hell","Clair","Chiaro") \
+X(BlackScreen,"Negro","Black","Schwarz","Noir","Nero") \
 X(KochLevel,"Nivel Koch","Koch lesson","Koch-Lektion","Leçon Koch","Lezione Koch") \
 X(GroupSize,"Largo grupo","Group size","Gruppenlänge","Taille groupe","Lung. gruppo") \
 X(Reset,"Restaurar","Defaults","Standardwerte","Réinitialiser","Ripristina") \

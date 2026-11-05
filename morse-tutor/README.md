@@ -11,6 +11,25 @@ dual. El reloj mantiene su código y sus perfiles separados.
 
 ## Novedades v2.1: cinco idiomas y entrenamiento ampliado
 
+### v2.1.7: tema claro/oscuro y pantalla negra de diagnóstico
+
+En **Ajustes → Tema** se elige Oscuro (predeterminado) o Claro
+con los botones -/+ y se guarda con OK. El tema queda en una clave
+NVS nueva ("theme"), conservando el indicativo, memorias y estadísticas
+anteriores. El color se aplica a fondos, botones, textos, acentos y logo.
+
+El botón **Negro** aparece arriba: debajo de la cabecera de Inicio
+y en las demás pantallas junto a Atrás. Pinta todos los píxeles de
+negro real (RGB565 0x0000) manteniendo la retroiluminación encendida
+para detectar retención del TFT. No apaga la pantalla ni borra ajustes.
+Un toque posterior recupera la vista de origen sin activar controles.
+Si se entra desde un ejercicio se para la reproducción y se restaura
+el estado de pausa, compensando los tiempos transcurridos al volver.
+
+Se incluye la transición del logo de arranque sin fotograma intermedio
+de v2.1.6, que seguía pendiente de publicar. No requiere memoria para
+un framebuffer de pantalla completa ni cambia la conexión ESP-NOW.
+
 ### v2.1.6: transición de portada a menú sin fotograma incompleto
 
 Al terminar la portada de arranque, el primer menú se dibuja completo

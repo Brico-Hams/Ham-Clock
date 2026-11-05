@@ -12,7 +12,7 @@ assert.match(source, /storage\.putString\("call", config\.callsign\)/);
 assert.match(source, /text\(config\.callsign, DISPLAY_W - callWidth - 8, 12, 2, kAccent\)/);
 assert.match(source, /drawHomeBrand\(\)/);
 assert.match(source, /brico_logo::draw\(display, .*width, height,/);
-assert.match(source, /brico_logo::draw\(display, 9, 4, 32, 32, 0, 112, true, true, kBackground\)/);
+assert.match(source, /brico_logo::draw\(display, 9, 4, 32, 32, 0, 112, true, config\.theme == 0, kBackground\)/);
 assert.match(source, /display\.fillScreen\(kBackground\)/);
 assert.doesNotMatch(source, /display\.fillRect\(6, 3, 174, 34, TFT_WHITE\)/);
 assert.match(source, /paintedActivity == activity/);

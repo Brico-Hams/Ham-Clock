@@ -153,7 +153,11 @@ Touch readTouch() {
   wasDown = result.down; lastTouch = result;
   return result;
 }
-void setBrightness(int percent) { ledcWrite(BRICO_BACKLIGHT_CHANNEL, constrain(percent, 10, 100) * 255 / 100); }
+void setBrightness(int percent) {
+  // 0 is intentionally supported for the one-time, tear-free boot transition.
+  // User brightness settings are still clamped to 10..100 in load() / UI.
+  ledcWrite(BRICO_BACKLIGHT_CHANNEL, constrain(percent, 0, 100) * 255 / 100);
+}
 void tone(bool enabled, int frequency) {
   if (enabled == previousTone && (!enabled || frequency == previousPitch)) return;
   previousTone = enabled; previousPitch = frequency;

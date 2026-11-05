@@ -13,9 +13,10 @@ namespace {
 using board::display;
 using brico::Text;
 using trainer::tr;
-constexpr uint16_t kBackground = 0x10c3, kCard = 0x2125, kAccent = 0xfb23, kMuted = 0xad55;
+uint16_t kBackground = 0x10c3, kCard = 0x2125, kAccent = 0xfb23,
+    kMuted = 0xad55, kText = TFT_WHITE;
 constexpr int kFooter = DISPLAY_H - BRICO_CONTROL_HEIGHT;
-enum class Screen { Home, Menu, Exercise, Setting, Callsign, Reset, Files, Memories, Statistics };
+enum class Screen { Home, Menu, Exercise, Setting, Callsign, Reset, Files, Memories, Statistics, Blackout };
 enum class Activity { Koch, Letters, Words, Numbers, Mixed, Card, Qso, Calls,
   Practice, CopyOne, CopyTwo, CopyWord, CopyCall, Flash, HeadCopy, Network, Echo, Adaptive, Memories, Statistics };
 struct MenuEntry { Text label; Activity action; };
@@ -28,10 +29,10 @@ constexpr MenuEntry kSend[] = {{Text::Practice, Activity::Practice}, {Text::Copy
   {Text::Echo, Activity::Echo}, {Text::Adaptive, Activity::Adaptive}, {Text::Memories, Activity::Memories},
   {Text::Statistics, Activity::Statistics}};
 constexpr Text kSettings[] = {Text::Speed, Text::Farnsworth, Text::Pitch, Text::KeyMode, Text::Callsign,
-  Text::Brightness, Text::KochLevel, Text::GroupSize, Text::Reset, Text::UiLanguage,
+  Text::Brightness, Text::Theme, Text::KochLevel, Text::GroupSize, Text::Reset, Text::UiLanguage,
   Text::WordLanguage, Text::Sequence, Text::CustomSet, Text::WordGap};
 struct Config {
-  int speed = 18, overall = 12, pitch = 700, brightness = 80, keyMode = 0, lesson = 2, groupSize = 5;
+  int speed = 18, overall = 12, pitch = 700, brightness = 80, keyMode = 0, lesson = 2, groupSize = 5, theme = 0;
   char callsign[brico::kCallSize] = "NOCALL";
 };
 Config config;
@@ -41,6 +42,9 @@ bool playbackVisible = true, playingNetwork = false, redraw = true;
 bool touchKeyDown = false;
 brico::TouchStraightKey touchKey;
 Screen screen = Screen::Home;
+Screen blackoutReturn = Screen::Home;
+bool blackoutWasPaused = false;
+uint32_t blackoutStartedAt = 0;
 Activity activity = Activity::Letters;
 int menuGroup = 0, menuPage = 0, focus = 0, setting = 0, hits = 0, attempts = 0, fileCount = 0, filePage = 0;
 char target[brico::kMaxText + 1] = {}, answer[brico::kMaxText + 1] = {}, outgoingWord[brico::kMaxText + 1] = {};
@@ -54,6 +58,22 @@ String files[20];
 File lessonFile;
 uint32_t nextExercise = 0;
 
+// Palette changes only in UI code, never from the audio timer.
+void applyTheme() {
+  if (config.theme == 1) {
+    kBackground = 0xffdf; // warm white
+    kCard = 0xe71c;       // pale gray
+    kAccent = 0xa2a0;     // dark ochre
+    kMuted = 0x632c;
+    kText = 0x10c3;       // near-black
+  } else {
+    kBackground = 0x10c3;
+    kCard = 0x2125;
+    kAccent = 0xfb23;
+    kMuted = 0xad55;
+    kText = TFT_WHITE;
+  }
+}
 bool editing(Text id) { return kSettings[setting] == id; }
 bool receiveActivity() { return int(activity) <= int(Activity::Calls); }
 bool challengeActivity() { return (activity >= Activity::CopyOne && activity <= Activity::HeadCopy) ||
@@ -67,6 +87,7 @@ bool save() {
   ok &= storage.putInt("overall", config.overall) == sizeof(int);
   ok &= storage.putInt("pitch", config.pitch) == sizeof(int);
   ok &= storage.putInt("brightness", config.brightness) == sizeof(int);
+  ok &= storage.putInt("theme", config.theme) == sizeof(int);
   ok &= storage.putInt("key", config.keyMode) == sizeof(int);
   ok &= storage.putInt("lesson", config.lesson) == sizeof(int);
   ok &= storage.putInt("group", config.groupSize) == sizeof(int);
@@ -82,18 +103,19 @@ void load() {
   config.overall = constrain(storage.getInt("overall", 12), 3, config.speed);
   config.pitch = constrain(storage.getInt("pitch", 700), 300, 1800);
   config.brightness = constrain(storage.getInt("brightness", 80), 10, 100);
+  config.theme = constrain(storage.getInt("theme", 0), 0, 1);
   config.keyMode = constrain(storage.getInt("key", 0), 0, 2);
   config.lesson = constrain(storage.getInt("lesson", 2), 2, int(strlen(trainer::sequence())));
   config.groupSize = constrain(storage.getInt("group", 5), 1, 10);
   String call = storage.getString("call", "NOCALL");
   if (brico::validCall(call.c_str())) memcpy(config.callsign, call.c_str(), call.length() + 1);
 }
-void text(const char* label, int x, int y, int size = 2, uint16_t color = TFT_WHITE) {
+void text(const char* label, int x, int y, int size = 2, uint16_t color = kText) {
   char glyphs[256]; brico::displayText(label, glyphs, sizeof(glyphs));
   display.setTextSize(size); display.setTextColor(color, kBackground);
   display.setCursor(x, y); display.print(glyphs);
 }
-void center(const char* label, int x, int y, int width, int size = 2, uint16_t color = TFT_WHITE) {
+void center(const char* label, int x, int y, int width, int size = 2, uint16_t color = kText) {
   char glyphs[256]; size_t length = brico::displayText(label, glyphs, sizeof(glyphs));
   if (int(length) * size * 6 > width) size = 1;
   text(label, x + max(0, (width - int(length) * size * 6) / 2), y, size, color);
@@ -109,18 +131,18 @@ void drawBootLogo() {
   const int height = width * brico_logo::kHeight / brico_logo::kWidth;
   const int y = (DISPLAY_H - height - 28) / 2;
   brico_logo::draw(display, (DISPLAY_W - width) / 2, y, width, height,
-                   0, brico_logo::kWidth, true, true, kBackground);
+                   0, brico_logo::kWidth, true, config.theme == 0, kBackground);
   const char* subtitle = "MORSE TUTOR";
   display.setTextSize(2);
-  display.setTextColor(TFT_WHITE, kBackground);
+  display.setTextColor(kText, kBackground);
   display.setCursor((DISPLAY_W - 11 * 12) / 2, y + height + 13);
   display.print(subtitle);
 }
 void drawHomeBrand() {
   // Image's white matte is transparent; do not paint a white rectangle.
-  brico_logo::draw(display, 9, 4, 32, 32, 0, 112, true, true, kBackground);
+  brico_logo::draw(display, 9, 4, 32, 32, 0, 112, true, config.theme == 0, kBackground);
   display.setTextSize(2);
-  display.setTextColor(TFT_WHITE, kBackground);
+  display.setTextColor(kText, kBackground);
   display.setCursor(46, 12);
   display.print("brico");
   display.setTextColor(kAccent, kBackground);
@@ -132,7 +154,7 @@ void button(int x, int y, int width, int height, const char* label, bool selecte
   display.drawRoundRect(x, y, width, height, 6, kAccent);
   char glyphs[128]; size_t length = brico::displayText(label, glyphs, sizeof(glyphs));
   int size = int(length) * 12 > width - 8 ? 1 : 2;
-  display.setTextSize(size); display.setTextColor(selected ? kBackground : TFT_WHITE, selected ? kAccent : kCard);
+  display.setTextSize(size); display.setTextColor(selected ? kBackground : kText, selected ? kAccent : kCard);
   display.setCursor(x + max(2, (width - int(length) * size * 6) / 2), y + (height - size * 8) / 2);
   display.print(glyphs);
 }
@@ -158,7 +180,8 @@ void exerciseFooter(const char* first, const char* second, const char* third) {
 }
 void header(const char* title) {
   button(6, 5, 76, 30, tr(Text::Back));
-  center(title, 87, 13, DISPLAY_W - 94, 2, kAccent);
+  button(DISPLAY_W - 82, 5, 74, 30, tr(Text::BlackScreen));
+  center(title, 87, 13, DISPLAY_W - 174, 2, kAccent);
   display.drawFastHLine(6, 41, DISPLAY_W - 12, kAccent);
 }
 void append(const char* value) {
@@ -213,6 +236,14 @@ void render() {
   const bool updatingExercise = painted && paintedScreen == Screen::Exercise &&
       screen == Screen::Exercise && paintedActivity == activity;
   redraw = false;
+  if (screen == Screen::Blackout) {
+    // Black pixels with the BACKLIGHT ON: a diagnostic for TFT image retention.
+    display.fillScreen(TFT_BLACK);
+    paintedScreen = screen;
+    paintedActivity = activity;
+    painted = true;
+    return;
+  }
   if (!updatingExercise) display.fillScreen(kBackground);
   if (screen == Screen::Home) {
     drawHomeBrand();
@@ -220,13 +251,14 @@ void render() {
     const int callWidth = int(strlen(config.callsign)) * 12;
     text(config.callsign, DISPLAY_W - callWidth - 8, 12, 2, kAccent);
     display.drawFastHLine(8, 39, DISPLAY_W - 16, kAccent);
+    button(DISPLAY_W - 82, 44, 74, 28, tr(Text::BlackScreen));
     const char* names[] = {tr(Text::Receive), tr(Text::Send), tr(Text::Config)};
     const char* icons[] = {"RX", "TX", "*"};
     for (int i = 0; i < 3; ++i) {
       int width = (DISPLAY_W - 24) / 3, x = 8 + i * (DISPLAY_W - 8) / 3;
-      button(x, 57, width, kFooter - 70, "", i == focus);
-      center(icons[i], x, 75, width, 3, kAccent);
-      center(names[i], x, 133, width, 2);
+      button(x, 80, width, kFooter - 100, "", i == focus);
+      center(icons[i], x, 99, width, 3, i == focus ? kBackground : kAccent);
+      center(names[i], x, 148, width, 2, i == focus ? kBackground : kText);
     }
     String status = networkReady() ? String(tr(Text::Network)) + ": " + networkPending() + " " + tr(Text::Pending) : tr(Text::NetworkError);
     text(status.c_str(), 8, kFooter - 15, 1, kMuted);
@@ -295,6 +327,7 @@ void render() {
     if (editing(Text::Pitch)) value = String(config.pitch) + " Hz";
     if (editing(Text::KeyMode)) value = config.keyMode == 0 ? tr(Text::Straight) : config.keyMode == 1 ? "Iambic A" : "Iambic B";
     if (editing(Text::Brightness)) value = String(config.brightness) + " %";
+    if (editing(Text::Theme)) value = tr(config.theme ? Text::Light : Text::Dark);
     if (editing(Text::KochLevel)) value = String(config.lesson);
     if (editing(Text::GroupSize)) value = String(config.groupSize);
     if (editing(Text::UiLanguage)) value = brico::kLanguageNames[draft.language];
@@ -468,6 +501,7 @@ void adjust(int direction) {
     if (editing(Text::Pitch)) config.pitch = constrain(config.pitch + 25 * direction, 300, 1800);
     if (editing(Text::KeyMode)) config.keyMode = (config.keyMode + direction + 3) % 3;
     if (editing(Text::Brightness)) { config.brightness = constrain(config.brightness + 5 * direction, 10, 100); board::setBrightness(config.brightness); }
+    if (editing(Text::Theme)) { config.theme = 1 - config.theme; applyTheme(); }
     if (editing(Text::KochLevel)) config.lesson = constrain(config.lesson + direction, 2, int(strlen(trainer::sequence())));
     if (editing(Text::GroupSize)) config.groupSize = constrain(config.groupSize + direction, 1, 10);
     if (editing(Text::UiLanguage)) draft.language = (draft.language + direction + languages) % languages;
@@ -524,7 +558,7 @@ void confirm() {
       back();
     }
   } else if (screen == Screen::Reset) {
-    config = Config{}; board::setBrightness(config.brightness);
+    config = Config{}; applyTheme(); board::setBrightness(config.brightness);
     auto defaults = trainer::Settings{};
     memcpy(defaults.memories, trainer::settings().memories, sizeof(defaults.memories));
     if (save() && trainer::save(defaults)) back();
@@ -548,6 +582,29 @@ void confirm() {
 }
 void tap(const board::Touch& touch) {
   if (!touch.tapped) return;
+  if (screen == Screen::Blackout) {
+    // A fresh tap restores the previous view, never a button beneath it.
+    screen = blackoutReturn;
+    paused = blackoutWasPaused;
+    if (screen == Screen::Exercise) {
+      const uint32_t elapsed = millis() - blackoutStartedAt;
+      nextExercise += elapsed;
+      if (waitingAnswer) answerDeadline += elapsed;
+    }
+    redraw = true;
+    return;
+  }
+  if ((screen == Screen::Home && inside(touch, DISPLAY_W - 82, 44, 74, 28)) ||
+      (screen != Screen::Home && inside(touch, DISPLAY_W - 82, 5, 74, 30))) {
+    blackoutReturn = screen;
+    blackoutWasPaused = paused;
+    blackoutStartedAt = millis();
+    audio::stop();
+    paused = true;
+    screen = Screen::Blackout;
+    redraw = true;
+    return;
+  }
   if (screen != Screen::Home && inside(touch, 6, 5, 76, 30)) { back(); return; }
   if (touch.y >= kFooter) {
     int key = brico::controlAt(touch.x, touch.y, DISPLAY_W, DISPLAY_H, BRICO_CONTROL_HEIGHT);
@@ -577,7 +634,7 @@ void tap(const board::Touch& touch) {
     else if (key < 2) adjust(key == 0 ? -1 : 1);
     redraw = true; return;
   }
-  if (screen == Screen::Home && touch.y >= 57 && touch.y < kFooter - 13) {
+  if (screen == Screen::Home && touch.y >= 80 && touch.y < kFooter - 20) {
     focus = min(2, touch.x * 3 / DISPLAY_W); confirm();
   } else if (screen == Screen::Menu) {
     for (int i = 0; i < 4; ++i) {
@@ -712,6 +769,7 @@ void setup() {
   trainer::begin();
   board::begin();
   load();
+  applyTheme();
   board::setBrightness(config.brightness);
   const uint32_t logoShownAt = millis();
   drawBootLogo();
@@ -726,7 +784,13 @@ void setup() {
   }
   // Allow the startup logo to remain readable even on a fast boot.
   while (millis() - logoShownAt < 1900) delay(10);
-  redraw = true;
+  // On SPI TFTs the first frame is assembled over multiple transactions.
+  // Hiding the backlight until render() finishes prevents an intermediate
+  // blank frame with half-drawn home letters from becoming visible.
+  // Only do this once at boot: exercise redraws must stay unmasked.
+  board::setBrightness(0);
+  render();
+  board::setBrightness(config.brightness);
 }
 
 void loop() {

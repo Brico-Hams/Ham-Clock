@@ -45,5 +45,7 @@ jobs:
           /tmp/morse-training-tests
           g++ -std=c++11 -Wall -Wextra -Werror -I include -I src -I test/support test/trainer_settings.cpp src/trainer_settings.cpp -o /tmp/morse-settings-tests
           /tmp/morse-settings-tests
-      - name: Validate startup branding and configurable callsign
-        run: node morse-tutor/tools/validate-branding.mjs
+      - name: Validate startup branding and themes
+        run: |
+          node morse-tutor/tools/validate-branding.mjs
+          node morse-tutor/tools/validate-themes.mjs
